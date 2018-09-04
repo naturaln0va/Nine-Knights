@@ -164,4 +164,27 @@ final class GameScene: SKScene {
             node.addChild(lineNode)
         }
     }
+    
+    // MARK: - Touches
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touches.forEach { touch in
+            handleTouch(touch)
+        }
+    }
+    
+    private func handleTouch(_ touch: UITouch) {
+        let location = touch.location(in: self)
+        let node = atPoint(location)
+        
+        guard node.name == NodeName.boardPoint.rawValue else {
+            return
+        }
+        
+        feedbackGenerator.impactOccurred()
+        feedbackGenerator.prepare()
+        
+        node.run(SKAction.sequence([SKAction.scale(to: 1.25, duration: 0.15), SKAction.scale(to: 1, duration: 0.15)]))
+    }
+
 }
