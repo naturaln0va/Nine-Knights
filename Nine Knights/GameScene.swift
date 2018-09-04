@@ -3,9 +3,15 @@ import SpriteKit
 
 final class GameScene: SKScene {
     
-    private enum NodeNames: String {
+    private enum NodeName: String {
         case boardPoint
         case token
+    }
+    
+    private enum NodeLayer: CGFloat {
+        case background
+        case line
+        case point
     }
     
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -62,14 +68,15 @@ final class GameScene: SKScene {
         
         for index in 0...2 {
             let containerNode = SKSpriteNode(
-                color: .darkGray,
+                color: .clear,
                 size: CGSize(
                     width: size.width - (innerPadding * CGFloat(index)),
                     height: size.height - (innerPadding * CGFloat(index))
                 )
             )
             
-            createBoardPoints(on: containerNode)
+            containerNode.zPosition = NodeLayer.background.rawValue
+            createBoardPoints(on: containerNode, shouldAddCenterLine: index < 2)
             containerNode.position = CGPoint(
                 x: viewWidth / 2,
                 y: viewHeight / 2
@@ -79,10 +86,12 @@ final class GameScene: SKScene {
         }
     }
     
-    private func createBoardPoints(on node: SKSpriteNode) {
-        let boardPointSize = CGSize(width: 20, height: 20)
+    private func createBoardPoints(on node: SKSpriteNode, shouldAddCenterLine: Bool) {
+        let lineWidth: CGFloat = 3
+        let centerLineLength: CGFloat = 50
         let halfBoardWidth = node.size.width / 2
         let halfBoardHeight = node.size.height / 2
+        let boardPointSize = CGSize(width: 24, height: 24)
         
         let relativeBoardPositions: [CGPoint] = [
             CGPoint(x: -halfBoardWidth, y: halfBoardHeight),
@@ -95,13 +104,64 @@ final class GameScene: SKScene {
             CGPoint(x: -halfBoardWidth, y: 0),
         ]
 
-        for position in relativeBoardPositions {
-            let boardPointNode = SKSpriteNode(color: .red, size: boardPointSize)
+        for (index, position) in relativeBoardPositions.enumerated() {
+            let boardPointNode = SKShapeNode(ellipseOf: boardPointSize)
             
-            boardPointNode.name = NodeNames.boardPoint.rawValue
+            boardPointNode.zPosition = NodeLayer.point.rawValue
+            boardPointNode.name = NodeName.boardPoint.rawValue
+            boardPointNode.lineWidth = lineWidth
             boardPointNode.position = position
+            boardPointNode.fillColor = .black
+            boardPointNode.strokeColor = .red
             
             node.addChild(boardPointNode)
+            
+            if shouldAddCenterLine && (position.x == 0 || position.y == 0) {
+                let path = CGMutablePath()
+                path.move(to: position)
+                
+                let nextPosition: CGPoint
+                if position.x == 0 {
+                    let factor = position.y > 0 ? -centerLineLength : centerLineLength
+                    nextPosition = CGPoint(x: 0, y: position.y + factor)
+                }
+                else {
+                    let factor = position.x > 0 ? -centerLineLength : centerLineLength
+                    nextPosition = CGPoint(x: position.x + factor, y: 0)
+                }
+                path.addLine(to: nextPosition)
+
+                let lineNode = SKShapeNode(path: path, centered: true)
+                lineNode.position = CGPoint(
+                    x: (position.x + nextPosition.x) / 2,
+                    y: (position.y + nextPosition.y) / 2
+                )
+                
+                lineNode.zPosition = NodeLayer.line.rawValue
+                lineNode.lineWidth = lineWidth
+                lineNode.strokeColor = .red
+                
+                node.addChild(lineNode)
+            }
+            
+            let lineIndex = index < relativeBoardPositions.count - 1 ? index + 1 : 0
+            let nextPosition = relativeBoardPositions[lineIndex]
+            
+            let path = CGMutablePath()
+            path.move(to: position)
+            path.addLine(to: nextPosition)
+            
+            let lineNode = SKShapeNode(path: path, centered: true)
+            lineNode.position = CGPoint(
+                x: (position.x + nextPosition.x) / 2,
+                y: (position.y + nextPosition.y) / 2
+            )
+            
+            lineNode.zPosition = NodeLayer.line.rawValue
+            lineNode.lineWidth = lineWidth
+            lineNode.strokeColor = .red
+            
+            node.addChild(lineNode)
         }
     }
 }
