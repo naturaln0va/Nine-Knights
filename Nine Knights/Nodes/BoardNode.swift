@@ -6,9 +6,9 @@ final class BoardNode: SKNode {
     static let boardPointNodeName = "boardPoint"
     
     private enum NodeLayer: CGFloat {
-        case background
-        case line
-        case point
+        case background = 10
+        case line = 11
+        case point = 12
     }
     
     init(size: CGSize, innerPadding: CGFloat = 100) {

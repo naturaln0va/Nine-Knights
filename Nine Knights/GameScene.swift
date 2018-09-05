@@ -6,11 +6,14 @@ final class GameScene: SKScene {
     // MARK: - Enums
     
     private enum NodeLayer: CGFloat {
-        case board
-        case tokens
+        case board = 100
+        case token = 101
     }
     
     // MARK: - Properties
+    
+    private var boardNode: BoardNode!
+    private var isPlayerTurn = true
     
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
@@ -57,7 +60,7 @@ final class GameScene: SKScene {
 
         let padding: CGFloat = 24
         let boardSide = min(viewWidth, viewHeight) - (padding * 2)
-        let boardNode = BoardNode(size: CGSize(width: boardSide, height: boardSide))
+        boardNode = BoardNode(size: CGSize(width: boardSide, height: boardSide))
         
         boardNode.zPosition = NodeLayer.board.rawValue
         boardNode.position = CGPoint(
@@ -79,7 +82,7 @@ final class GameScene: SKScene {
     private func handleTouch(_ touch: UITouch) {
         let location = touch.location(in: self)
         let node = atPoint(location)
-        
+                
         guard node.name == BoardNode.boardPointNodeName else {
             return
         }
@@ -87,13 +90,20 @@ final class GameScene: SKScene {
         feedbackGenerator.impactOccurred()
         feedbackGenerator.prepare()
         
-        spawnToken(at: location)
+        spawnToken(at: node.position)
+        
+        isPlayerTurn = !isPlayerTurn
     }
     
     // MARK: - Spawning
     
     private func spawnToken(at point: CGPoint) {
+        let tokenNode = TokenNode(type: isPlayerTurn ? .player : .opponent)
         
+        tokenNode.zPosition = NodeLayer.token.rawValue
+        tokenNode.position = point
+        
+        boardNode.addChild(tokenNode)
     }
 
 }
