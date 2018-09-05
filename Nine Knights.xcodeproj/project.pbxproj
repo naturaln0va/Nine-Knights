@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		481215E8213CC2DB00AE0010 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481215E7213CC2DB00AE0010 /* GameScene.swift */; };
 		481215EA213CC30400AE0010 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481215E9213CC30400AE0010 /* GameViewController.swift */; };
+		481B9027213F45AA00B258CB /* BoardNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481B9026213F45AA00B258CB /* BoardNode.swift */; };
 		48342E24213CB89300E0663C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48342E23213CB89300E0663C /* AppDelegate.swift */; };
 		48342E2B213CB89500E0663C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 48342E2A213CB89500E0663C /* Assets.xcassets */; };
 		48342E2E213CB89500E0663C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48342E2C213CB89500E0663C /* LaunchScreen.storyboard */; };
@@ -17,6 +18,7 @@
 /* Begin PBXFileReference section */
 		481215E7213CC2DB00AE0010 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		481215E9213CC30400AE0010 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+		481B9026213F45AA00B258CB /* BoardNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardNode.swift; sourceTree = "<group>"; };
 		48342E20213CB89300E0663C /* Nine Knights.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Nine Knights.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		48342E23213CB89300E0663C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		48342E2A213CB89500E0663C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -45,6 +47,14 @@
 			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		481B9028213F7BAD00B258CB /* Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				481B9026213F45AA00B258CB /* BoardNode.swift */,
+			);
+			path = Nodes;
+			sourceTree = "<group>";
+		};
 		48342E17213CB89300E0663C = {
 			isa = PBXGroup;
 			children = (
@@ -67,6 +77,7 @@
 				48342E23213CB89300E0663C /* AppDelegate.swift */,
 				481215E7213CC2DB00AE0010 /* GameScene.swift */,
 				481215E9213CC30400AE0010 /* GameViewController.swift */,
+				481B9028213F7BAD00B258CB /* Nodes */,
 				481215E6213CBD4F00AE0010 /* Supporting Files */,
 			);
 			path = "Nine Knights";
@@ -142,6 +153,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				481B9027213F45AA00B258CB /* BoardNode.swift in Sources */,
 				481215E8213CC2DB00AE0010 /* GameScene.swift in Sources */,
 				481215EA213CC30400AE0010 /* GameViewController.swift in Sources */,
 				48342E24213CB89300E0663C /* AppDelegate.swift in Sources */,
