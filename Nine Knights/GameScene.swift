@@ -12,8 +12,10 @@ final class GameScene: SKScene {
     
     // MARK: - Properties
     
-    private var boardNode: BoardNode!
     private var isPlayerTurn = true
+    
+    private var boardNode: BoardNode!
+    private var selectedTokenNode: TokenNode?
     
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
@@ -82,17 +84,33 @@ final class GameScene: SKScene {
     private func handleTouch(_ touch: UITouch) {
         let location = touch.location(in: self)
         let node = atPoint(location)
+        
+        switch node.name {
+        case BoardNode.boardPointNodeName:
+            if let token = selectedTokenNode {
+                token.run(SKAction.move(to: node.position, duration: 0.175))
                 
-        guard node.name == BoardNode.boardPointNodeName else {
-            return
+                selectedTokenNode = nil
+            }
+            else {
+                feedbackGenerator.impactOccurred()
+                feedbackGenerator.prepare()
+                
+                spawnToken(at: node.position)
+            }
+            
+            isPlayerTurn = !isPlayerTurn
+            
+        case TokenNode.tokenNodeName:
+            guard let token = node as? TokenNode else {
+                return
+            }
+            
+            selectedTokenNode = token
+            
+        default:
+            selectedTokenNode = nil
         }
-        
-        feedbackGenerator.impactOccurred()
-        feedbackGenerator.prepare()
-        
-        spawnToken(at: node.position)
-        
-        isPlayerTurn = !isPlayerTurn
     }
     
     // MARK: - Spawning
