@@ -13,10 +13,12 @@ final class GameScene: SKScene {
     // MARK: - Properties
     
     private var isPlayerTurn = true
+    private var tokenNeighbors = [SKNode]()
     
     private var boardNode: BoardNode!
     private var selectedTokenNode: TokenNode?
-    
+
+    private let model = GameModel()
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     private var viewWidth: CGFloat {
@@ -61,8 +63,7 @@ final class GameScene: SKScene {
         backgroundColor = .black
 
         let padding: CGFloat = 24
-        let boardSide = min(viewWidth, viewHeight) - (padding * 2)
-        boardNode = BoardNode(size: CGSize(width: boardSide, height: boardSide))
+        boardNode = BoardNode(sideLength: min(viewWidth, viewHeight) - (padding * 2))
         
         boardNode.zPosition = NodeLayer.board.rawValue
         boardNode.position = CGPoint(
@@ -88,28 +89,50 @@ final class GameScene: SKScene {
         switch node.name {
         case BoardNode.boardPointNodeName:
             if let token = selectedTokenNode {
-                token.run(SKAction.move(to: node.position, duration: 0.175))
+                if tokenNeighbors.contains(node) {
+                    token.run(SKAction.move(to: node.position, duration: 0.175))
+                    
+                    isPlayerTurn = !isPlayerTurn
+                }
                 
-                selectedTokenNode = nil
+                deselectCurrentToken()
             }
             else {
                 feedbackGenerator.impactOccurred()
                 feedbackGenerator.prepare()
                 
                 spawnToken(at: node.position)
+                
+                isPlayerTurn = !isPlayerTurn
             }
             
-            isPlayerTurn = !isPlayerTurn
-            
         case TokenNode.tokenNodeName:
+            deselectCurrentToken()
+            
             guard let token = node as? TokenNode else {
                 return
             }
             
             selectedTokenNode = token
             
+            guard let boardPointNode = nodes(at: location).first(where: { $0.name == BoardNode.boardPointNodeName }) else {
+                return
+            }
+            
+            guard let coord = boardNode.gridCoordinate(for: boardPointNode) else {
+                return
+            }
+            
+            tokenNeighbors = model.neighbors(at: coord).compactMap { coord in
+                return self.boardNode.boardPointNode(at: coord)
+            }
+            
+            for neighborNode in tokenNeighbors {
+                neighborNode.run(SKAction.scale(to: 1.25, duration: 0.15))
+            }
+            
         default:
-            selectedTokenNode = nil
+            deselectCurrentToken()
         }
     }
     
@@ -122,6 +145,22 @@ final class GameScene: SKScene {
         tokenNode.position = point
         
         boardNode.addChild(tokenNode)
+    }
+    
+    // MARK: - Helpers
+    
+    private func deselectCurrentToken() {
+        guard !tokenNeighbors.isEmpty else {
+            return
+        }
+        
+        selectedTokenNode = nil
+        
+        tokenNeighbors.forEach { node in
+            node.run(SKAction.scale(to: 1, duration: 0.15))
+        }
+        
+        tokenNeighbors.removeAll()
     }
 
 }

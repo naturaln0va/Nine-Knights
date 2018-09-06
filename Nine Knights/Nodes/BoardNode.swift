@@ -7,12 +7,20 @@ final class BoardNode: SKNode {
     
     private enum NodeLayer: CGFloat {
         case background = 10
-        case line = 11
-        case point = 12
+        case line = 20
+        case point = 30
     }
     
-    init(size: CGSize, innerPadding: CGFloat = 100) {
+    private let sideLength: CGFloat
+    private let innerPadding: CGFloat
+    
+    init(sideLength: CGFloat, innerPadding: CGFloat = 100) {
+        self.sideLength = sideLength
+        self.innerPadding = innerPadding
+        
         super.init()
+        
+        let size = CGSize(width: sideLength, height: sideLength)
         
         for index in 0...2 {
             let containerNode = SKSpriteNode(
@@ -23,7 +31,7 @@ final class BoardNode: SKNode {
                 )
             )
             
-            containerNode.zPosition = NodeLayer.background.rawValue
+            containerNode.zPosition = NodeLayer.background.rawValue + CGFloat(index)
             createBoardPoints(on: containerNode, shouldAddCenterLine: index < 2)
             
             addChild(containerNode)
@@ -34,6 +42,54 @@ final class BoardNode: SKNode {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func boardPointNode(at gridCoordinate: GameModel.GridCoordinate) -> SKNode? {
+        let layerPadding = innerPadding * CGFloat(gridCoordinate.layer.rawValue)
+        let halfLayerSide = (sideLength - layerPadding) / 2
+        let halfLayerPadding = layerPadding / 2
+        let halfSide = sideLength / 2
+        
+        let adjustedXCoord = halfLayerPadding + (CGFloat(gridCoordinate.x.rawValue) * halfLayerSide)
+        let adjustedYCoord = halfLayerPadding + (CGFloat(gridCoordinate.y.rawValue) * halfLayerSide)
+        
+        let relativeGridPoint = CGPoint(x: adjustedXCoord - halfSide, y: adjustedYCoord - halfSide)
+        
+        let node = atPoint(relativeGridPoint)
+        return node.name == BoardNode.boardPointNodeName ? node : nil
+    }
+    
+    func gridCoordinate(for node: SKNode) -> GameModel.GridCoordinate? {
+        guard let parentZPosition = node.parent?.zPosition else {
+            return nil
+        }
+        
+        let adjustedParentZPosition = parentZPosition - NodeLayer.background.rawValue
+        
+        guard let layer = GameModel.GridLayer(rawValue: Int(adjustedParentZPosition)) else {
+            return nil
+        }
+                
+        print("Grid layer for node: \(layer.rawValue)")
+        print("Node position: \(node.position)")
+
+        let xGridPosition: GameModel.GridPosition
+        if node.position.x == 0 {
+            xGridPosition = .mid
+        }
+        else {
+            xGridPosition = node.position.x > 0 ? .max : .min
+        }
+        
+        let yGridPosition: GameModel.GridPosition
+        if node.position.y == 0 {
+            yGridPosition = .mid
+        }
+        else {
+            yGridPosition = node.position.y > 0 ? .max : .min
+        }
+        
+        return GameModel.GridCoordinate(x: xGridPosition, y: yGridPosition, layer: layer)
+    }
+
     private func createBoardPoints(on node: SKSpriteNode, shouldAddCenterLine: Bool) {
         let lineWidth: CGFloat = 3
         let centerLineLength: CGFloat = 50
