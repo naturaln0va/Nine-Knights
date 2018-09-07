@@ -102,6 +102,10 @@ final class GameScene: SKScene {
     }
     
     private func handleTouch(_ touch: UITouch) {
+        guard model.winner == nil else {
+            return
+        }
+        
         let location = touch.location(in: self)
         
         if model.isCapturingPiece {
@@ -149,52 +153,43 @@ final class GameScene: SKScene {
     }
     
     private func handleMovement(at location: CGPoint) {
-//        let node = atPoint(location)
-//
-//        switch node.name {
-//        case BoardNode.boardPointNodeName:
-//            if let token = selectedTokenNode {
-//                if selectedTokenNeighbors.contains(node) {
-//                    token.run(SKAction.move(to: node.position, duration: 0.175))
-//                }
-//
-//                deselectCurrentToken()
-//            }
-//            else {
-//                feedbackGenerator.impactOccurred()
-//                feedbackGenerator.prepare()
-//
-//                spawnToken(at: node.position)
-//            }
-//
-//        case TokenNode.tokenNodeName:
-//            deselectCurrentToken()
-//
-//            guard let token = node as? TokenNode else {
-//                return
-//            }
-//
-//            selectedTokenNode = token
-//
-//            guard let boardPointNode = nodes(at: location).first(where: { $0.name == BoardNode.boardPointNodeName }) else {
-//                return
-//            }
-//
-//            guard let coord = boardNode.gridCoordinate(for: boardPointNode) else {
-//                return
-//            }
-//
-//            selectedTokenNeighbors = model.neighbors(at: coord).compactMap { coord in
-//                return self.boardNode.boardPointNode(at: coord)
-//            }
-//
-//            for neighborNode in selectedTokenNeighbors {
-//                neighborNode.run(SKAction.scale(to: 1.25, duration: 0.15))
-//            }
-//
-//        default:
-//            deselectCurrentToken()
-//        }
+        let node = atPoint(location)
+        
+        if let selected = selectedTokenNode {
+            if selectedTokenNeighbors.contains(node) {
+                let selectedSceneLocation = convert(selected.position, from: boardNode)
+                
+                guard let fromCoord = gridCoordinate(at: selectedSceneLocation), let toCoord = boardNode.gridCoordinate(for: node) else {
+                    return
+                }
+                
+                model.move(from: fromCoord, to: toCoord)
+                processGameUpdate()
+
+                selected.run(SKAction.move(to: node.position, duration: 0.175))
+            }
+            
+            deselectCurrentToken()
+        }
+        else {
+            guard let token = node as? TokenNode, token.type == model.currentPlayer else {
+                return
+            }
+
+            selectedTokenNode = token
+            
+            guard let coord = gridCoordinate(at: location) else {
+                return
+            }
+            
+            selectedTokenNeighbors = model.neighbors(at: coord).compactMap { coord in
+                return self.boardNode.node(at: coord, named: BoardNode.boardPointNodeName)
+            }
+
+            for neighborNode in selectedTokenNeighbors {
+                neighborNode.run(SKAction.scale(to: 1.25, duration: 0.15))
+            }
+        }
     }
     
     private func handleRemoval(at location: CGPoint) {
@@ -204,11 +199,7 @@ final class GameScene: SKScene {
             return
         }
         
-        guard let boardPointNode = nodes(at: location).first(where: { $0.name == BoardNode.boardPointNodeName }) else {
-            return
-        }
-        
-        guard let coord = boardNode.gridCoordinate(for: boardPointNode) else {
+        guard let coord = gridCoordinate(at: location) else {
             return
         }
         
@@ -222,6 +213,14 @@ final class GameScene: SKScene {
         }
         
         processGameUpdate()
+    }
+    
+    private func gridCoordinate(at location: CGPoint) -> GameModel.GridCoordinate? {
+        guard let boardPointNode = nodes(at: location).first(where: { $0.name == BoardNode.boardPointNodeName }) else {
+            return nil
+        }
+        
+        return boardNode.gridCoordinate(for: boardPointNode)
     }
     
     private func deselectCurrentToken() {

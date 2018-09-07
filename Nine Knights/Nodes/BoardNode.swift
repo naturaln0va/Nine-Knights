@@ -67,10 +67,7 @@ final class BoardNode: SKNode {
         guard let layer = GameModel.GridLayer(rawValue: Int(adjustedParentZPosition)) else {
             return nil
         }
-                
-        print("Grid layer for node: \(layer.rawValue)")
-        print("Node position: \(node.position)")
-
+        
         let xGridPosition: GameModel.GridPosition
         if node.position.x == 0 {
             xGridPosition = .mid

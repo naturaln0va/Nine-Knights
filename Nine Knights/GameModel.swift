@@ -6,6 +6,7 @@ struct GameModel {
     var turn: Int
     var state: State
     var tokens: [Token]
+    var winner: Player?
     var tokensPlaced: Int
     var removedToken: Token?
     var millTokens: [Token]?
@@ -147,7 +148,7 @@ struct GameModel {
             return playerTokens
         }
         
-        #warning("Check for mills, and remove them!")
+        // #warning("Check for mills, and remove them!")
         
         return playerTokens // filter these
     }
@@ -168,7 +169,7 @@ struct GameModel {
         }
         
         let horizontalMillTokens = playerTokens.filter {
-            return $0.coord.x == token.coord.x
+            return $0.coord.x == token.coord.x && $0.coord.layer == token.coord.layer
         }
         
         if horizontalMillTokens.count == 3 {
@@ -178,7 +179,7 @@ struct GameModel {
         }
         
         let verticalMillTokens = playerTokens.filter {
-            return $0.coord.y == token.coord.y
+            return $0.coord.y == token.coord.y && $0.coord.layer == token.coord.layer
         }
         
         if verticalMillTokens.count == 3 {
@@ -224,13 +225,39 @@ struct GameModel {
         return true
     }
     
+    mutating func move(from: GridCoordinate, to: GridCoordinate) {
+        guard let index = tokens.firstIndex(where: { $0.coord == from }) else {
+            return
+        }
+
+        let previousToken = tokens[index]
+        let movedToken = Token(playerID: previousToken.playerID, coord: to)
+        
+        tokens[index] = movedToken
+        
+        guard !checkMill(for: movedToken) else {
+            return
+        }
+        
+        advance()
+    }
+    
     private mutating func advance() {
         if tokensPlaced == maxTokenCount {
             state = .movement
         }
         
-        isKnightTurn = !isKnightTurn
         turn += 1
+
+        if tokenCount(for: .knight) == 2 {
+            winner = Player.troll
+        }
+        else if tokenCount(for: .troll) == 2 {
+            winner = Player.knight
+        }
+        else {
+            isKnightTurn = !isKnightTurn
+        }
     }
     
     private func tokenCount(for player: Player) -> Int {
