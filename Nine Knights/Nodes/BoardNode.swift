@@ -42,7 +42,7 @@ final class BoardNode: SKNode {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func boardPointNode(at gridCoordinate: GameModel.GridCoordinate) -> SKNode? {
+    func node(at gridCoordinate: GameModel.GridCoordinate, named nodeName: String) -> SKNode? {
         let layerPadding = innerPadding * CGFloat(gridCoordinate.layer.rawValue)
         let halfLayerSide = (sideLength - layerPadding) / 2
         let halfLayerPadding = layerPadding / 2
@@ -54,7 +54,7 @@ final class BoardNode: SKNode {
         let relativeGridPoint = CGPoint(x: adjustedXCoord - halfSide, y: adjustedYCoord - halfSide)
         
         let node = atPoint(relativeGridPoint)
-        return node.name == BoardNode.boardPointNodeName ? node : nil
+        return node.name == nodeName ? node : nil
     }
     
     func gridCoordinate(for node: SKNode) -> GameModel.GridCoordinate? {

@@ -8,10 +8,23 @@ struct GameModel {
     var tokens: [Token]
     var tokensPlaced: Int
     var removedToken: Token?
+    var millTokens: [Token]?
     var lastMove: (start: GridCoordinate, end: GridCoordinate)?
+    
+    var currentPlayer: Player {
+        return isKnightTurn ? .knight : .troll
+    }
+    
+    var currentOpponent: Player {
+        return isKnightTurn ? .troll : .knight
+    }
     
     var messageToDisplay: String {
         let playerName = isKnightTurn ? "Knight" : "Troll"
+        
+        if isCapturingPiece {
+            return "Take an opponent's piece!"
+        }
         
         let stateAction: String
         switch state {
@@ -31,6 +44,10 @@ struct GameModel {
         }
         
         return "\(playerName)'s turn to \(stateAction)"
+    }
+    
+    var isCapturingPiece: Bool {
+        return millTokens?.isEmpty == false
     }
     
     private(set) var isKnightTurn: Bool
@@ -121,6 +138,58 @@ struct GameModel {
         return neighbors
     }
     
+    func removableTokens(for player: Player) -> [Token] {
+        let playerTokens = tokens.filter {
+            return $0.playerID == player.rawValue
+        }
+        
+        if playerTokens.count <= 3 {
+            return playerTokens
+        }
+        
+        #warning("Check for mills, and remove them!")
+        
+        return playerTokens // filter these
+    }
+    
+    mutating func checkMill(for token: Token) -> Bool {
+        let playerTokens = tokens.filter {
+            return $0.playerID == token.playerID
+        }
+        
+        let middleMillTokens = playerTokens.filter {
+            return $0.coord.x == token.coord.x && $0.coord.y == token.coord.y
+        }
+        
+        if middleMillTokens.count == 3 {
+            print("Detected a new middle mill for: \(token.playerID)")
+            millTokens = middleMillTokens
+            return true
+        }
+        
+        let horizontalMillTokens = playerTokens.filter {
+            return $0.coord.x == token.coord.x
+        }
+        
+        if horizontalMillTokens.count == 3 {
+            print("Detected a new horizontal mill for: \(token.playerID)")
+            millTokens = horizontalMillTokens
+            return true
+        }
+        
+        let verticalMillTokens = playerTokens.filter {
+            return $0.coord.y == token.coord.y
+        }
+        
+        if verticalMillTokens.count == 3 {
+            print("Detected a new vertical mill for: \(token.playerID)")
+            millTokens = verticalMillTokens
+            return true
+        }
+        
+        return false
+    }
+    
     mutating func placeToken(at coord: GridCoordinate) {
         guard state == .placement else {
             return
@@ -128,10 +197,31 @@ struct GameModel {
         
         let playerID = isKnightTurn ? Player.knight.rawValue : Player.troll.rawValue
         
-        tokens.append(Token(playerID: playerID, coord: coord))
+        let newToken = Token(playerID: playerID, coord: coord)
+        tokens.append(newToken)
         tokensPlaced += 1
         
+        guard !checkMill(for: newToken) else {
+            return
+        }
+        
         advance()
+    }
+    
+    mutating func removeToken(at coord: GridCoordinate) -> Bool {
+        guard isCapturingPiece else {
+            return false
+        }
+        
+        guard let index = tokens.firstIndex(where: { $0.coord == coord }) else {
+            return false
+        }
+        
+        tokens.remove(at: index)
+        millTokens?.removeAll()
+        advance()
+        
+        return true
     }
     
     private mutating func advance() {
@@ -172,7 +262,7 @@ extension GameModel {
         case outer, middle, center
     }
     
-    struct GridCoordinate {
+    struct GridCoordinate: Equatable {
         let x, y: GridPosition
         let layer: GridLayer
     }

@@ -17,11 +17,13 @@ final class GameScene: SKScene {
     private var messageNode: SKLabelNode!
     private var selectedTokenNode: TokenNode?
     
+    private var removableNodes = [TokenNode]()
     private var selectedTokenNeighbors = [SKNode]()
 
     private var model = GameModel()
+    private let successGenerator = UINotificationFeedbackGenerator()
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-    
+
     // MARK: Computed
     
     private var viewWidth: CGFloat {
@@ -47,7 +49,9 @@ final class GameScene: SKScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         
+        successGenerator.prepare()
         feedbackGenerator.prepare()
+        
         setUpScene(in: view)
     }
     
@@ -100,6 +104,11 @@ final class GameScene: SKScene {
     private func handleTouch(_ touch: UITouch) {
         let location = touch.location(in: self)
         
+        if model.isCapturingPiece {
+            handleRemoval(at: location)
+            return
+        }
+        
         switch model.state {
         case .placement:
             handlePlacement(at: location)
@@ -112,7 +121,7 @@ final class GameScene: SKScene {
     // MARK: - Spawning
     
     private func spawnToken(at point: CGPoint) {
-        let tokenNode = TokenNode(type: model.isKnightTurn ? .knight : .troll)
+        let tokenNode = TokenNode(type: model.currentPlayer)
         
         tokenNode.zPosition = NodeLayer.token.rawValue
         tokenNode.position = point
@@ -121,11 +130,6 @@ final class GameScene: SKScene {
     }
     
     // MARK: - Helpers
-    
-    private func generateFeedback() {
-        feedbackGenerator.impactOccurred()
-        feedbackGenerator.prepare()
-    }
     
     private func handlePlacement(at location: CGPoint) {
         let node = atPoint(location)
@@ -138,12 +142,10 @@ final class GameScene: SKScene {
             return
         }
         
-        generateFeedback()
-        
         spawnToken(at: node.position)
-        
         model.placeToken(at: coord)
-        updateDisplayForStateChange()
+        
+        processGameUpdate()
     }
     
     private func handleMovement(at location: CGPoint) {
@@ -195,6 +197,33 @@ final class GameScene: SKScene {
 //        }
     }
     
+    private func handleRemoval(at location: CGPoint) {
+        let node = atPoint(location)
+        
+        guard let tokenNode = node as? TokenNode, tokenNode.type == model.currentOpponent else {
+            return
+        }
+        
+        guard let boardPointNode = nodes(at: location).first(where: { $0.name == BoardNode.boardPointNodeName }) else {
+            return
+        }
+        
+        guard let coord = boardNode.gridCoordinate(for: boardPointNode) else {
+            return
+        }
+        
+        guard model.removeToken(at: coord) else {
+            return
+        }
+        
+        tokenNode.remove()
+        removableNodes.forEach { node in
+            node.isIndicated = false
+        }
+        
+        processGameUpdate()
+    }
+    
     private func deselectCurrentToken() {
         guard !selectedTokenNeighbors.isEmpty else {
             return
@@ -209,8 +238,29 @@ final class GameScene: SKScene {
         selectedTokenNeighbors.removeAll()
     }
     
-    private func updateDisplayForStateChange() {
+    private func processGameUpdate() {
         messageNode.text = model.messageToDisplay
+        
+        if model.isCapturingPiece {
+            successGenerator.notificationOccurred(.success)
+            successGenerator.prepare()
+            
+            let tokens = model.removableTokens(for: model.currentOpponent)
+            
+            let nodes = tokens.compactMap { token in
+                boardNode.node(at: token.coord, named: TokenNode.tokenNodeName) as? TokenNode
+            }
+            
+            removableNodes = nodes
+            
+            nodes.forEach { node in
+                node.isIndicated = true
+            }
+        }
+        else {
+            feedbackGenerator.impactOccurred()
+            feedbackGenerator.prepare()
+        }
     }
 
 }
