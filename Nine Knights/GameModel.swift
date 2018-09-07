@@ -3,22 +3,27 @@ import Foundation
 
 struct GameModel {
     
-    enum GridPosition: Int {
-        case min, mid, max
-    }
+    var turn: Int
+    var state: State
+    var tokens: [Token]
+    var tokensPlaced: Int
+    var removedToken: Token?
+    var lastMove: (start: GridCoordinate, end: GridCoordinate)?
     
-    enum GridLayer: Int {
-        case outer, middle, center
-    }
+    private(set) var isKnightTurn: Bool
+    private let positions: [GridCoordinate]
     
-    struct GridCoordinate {
-        let x, y: GridPosition
-        let layer: GridLayer
-    }
+    private let maxTokenCount = 18
+    private let minPlayerTokenCount = 3
     
-    let positions: [GridCoordinate]
-    
-    init() {
+    init(isKnightTurn: Bool = true) {
+        self.isKnightTurn = isKnightTurn
+        
+        turn = 0
+        tokensPlaced = 0
+        state = .movement
+        tokens = [Token]()
+
         positions = [
             GridCoordinate(x: .min, y: .max, layer: .outer),
             GridCoordinate(x: .mid, y: .max, layer: .outer),
@@ -93,4 +98,37 @@ struct GameModel {
         return neighbors
     }
     
+}
+
+// MARK: - Types
+
+extension GameModel {
+    
+    enum Player: String {
+        case knight, troll
+    }
+    
+    enum State {
+        case placement
+        case movement
+    }
+
+    enum GridPosition: Int {
+        case min, mid, max
+    }
+    
+    enum GridLayer: Int {
+        case outer, middle, center
+    }
+    
+    struct GridCoordinate {
+        let x, y: GridPosition
+        let layer: GridLayer
+    }
+    
+    struct Token {
+        let playerID: String
+        let coord: GridCoordinate
+    }
+
 }
