@@ -158,18 +158,8 @@ struct GameModel {
             return $0.playerID == token.playerID
         }
         
-        let middleMillTokens = playerTokens.filter {
-            return $0.coord.x == token.coord.x && $0.coord.y == token.coord.y
-        }
-        
-        if middleMillTokens.count == 3 {
-            print("Detected a new middle mill for: \(token.playerID)")
-            millTokens = middleMillTokens
-            return true
-        }
-        
         let horizontalMillTokens = playerTokens.filter {
-            return $0.coord.x == token.coord.x && $0.coord.layer == token.coord.layer
+            return $0.coord.x == token.coord.x && (token.coord.x == .mid ? true : $0.coord.layer == token.coord.layer)
         }
         
         if horizontalMillTokens.count == 3 {
@@ -179,7 +169,7 @@ struct GameModel {
         }
         
         let verticalMillTokens = playerTokens.filter {
-            return $0.coord.y == token.coord.y && $0.coord.layer == token.coord.layer
+            return $0.coord.y == token.coord.y && (token.coord.y == .mid ? true : $0.coord.layer == token.coord.layer)
         }
         
         if verticalMillTokens.count == 3 {
@@ -249,11 +239,13 @@ struct GameModel {
         
         turn += 1
 
-        if tokenCount(for: .knight) == 2 {
-            winner = Player.troll
-        }
-        else if tokenCount(for: .troll) == 2 {
-            winner = Player.knight
+        if state == .movement {
+            if tokenCount(for: .knight) == 2 {
+                winner = Player.troll
+            }
+            else if tokenCount(for: .troll) == 2 {
+                winner = Player.knight
+            }
         }
         else {
             isKnightTurn = !isKnightTurn
