@@ -10,6 +10,29 @@ struct GameModel {
     var removedToken: Token?
     var lastMove: (start: GridCoordinate, end: GridCoordinate)?
     
+    var messageToDisplay: String {
+        let playerName = isKnightTurn ? "Knight" : "Troll"
+        
+        let stateAction: String
+        switch state {
+        case .placement:
+            stateAction = "place"
+            
+        case .movement:
+            if tokenCount(for: .knight) < minPlayerTokenCount {
+                return "Trolls win!"
+            }
+            else if tokenCount(for: .troll) < minPlayerTokenCount {
+                return "Knights win!"
+            }
+            else {
+                stateAction = "move"
+            }
+        }
+        
+        return "\(playerName)'s turn to \(stateAction)"
+    }
+    
     private(set) var isKnightTurn: Bool
     private let positions: [GridCoordinate]
     
@@ -21,7 +44,7 @@ struct GameModel {
         
         turn = 0
         tokensPlaced = 0
-        state = .movement
+        state = .placement
         tokens = [Token]()
 
         positions = [
@@ -96,6 +119,34 @@ struct GameModel {
         }
         
         return neighbors
+    }
+    
+    mutating func placeToken(at coord: GridCoordinate) {
+        guard state == .placement else {
+            return
+        }
+        
+        let playerID = isKnightTurn ? Player.knight.rawValue : Player.troll.rawValue
+        
+        tokens.append(Token(playerID: playerID, coord: coord))
+        tokensPlaced += 1
+        
+        advance()
+    }
+    
+    private mutating func advance() {
+        if tokensPlaced == maxTokenCount {
+            state = .movement
+        }
+        
+        isKnightTurn = !isKnightTurn
+        turn += 1
+    }
+    
+    private func tokenCount(for player: Player) -> Int {
+        return tokens.filter { token in
+            return token.playerID == player.rawValue
+        }.count
     }
     
 }

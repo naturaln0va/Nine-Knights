@@ -4,16 +4,11 @@ import SpriteKit
 final class TokenNode: SKSpriteNode {
     
     static let tokenNodeName = "token"
-
-    enum TokenType {
-        case player
-        case opponent
-    }
     
-    init(type: TokenType) {
+    init(type: GameModel.Player) {
         super.init(
             texture: nil,
-            color: type == .player ? .magenta : .green,
+            color: type == .knight ? .magenta : .green,
             size: CGSize(width: 28, height: 28)
         )
         
