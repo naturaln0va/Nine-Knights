@@ -8,6 +8,10 @@ final class GameViewController: UIViewController {
         return view as! SKView
     }
     
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
     override func loadView() {
         view = SKView()
     }
@@ -15,7 +19,7 @@ final class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        skView.presentScene(GameScene())
+        skView.presentScene(MenuScene())
     }
     
 }
