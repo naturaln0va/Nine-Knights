@@ -35,10 +35,10 @@ struct GameModel {
             
         case .movement:
             if tokenCount(for: .knight) < minPlayerTokenCount {
-                return "Trolls win!"
+                return "Troll's win!"
             }
             else if tokenCount(for: .troll) < minPlayerTokenCount {
-                return "Knights win!"
+                return "Knight's win!"
             }
             else {
                 stateAction = "move"
@@ -50,6 +50,14 @@ struct GameModel {
     
     var isCapturingPiece: Bool {
         return currentMill != nil
+    }
+    
+    var emptyCoordinates: [GridCoordinate] {
+        let tokenCoords = tokens.map({ $0.coord })
+        
+        return positions.filter { coord in
+            return !tokenCoords.contains(coord)
+        }
     }
     
     private(set) var isKnightTurn: Bool
@@ -142,8 +150,16 @@ struct GameModel {
     }
     
     func removableTokens(for player: Player) -> [Token] {
-        return tokens.filter { token in
-            return token.playerID == player.rawValue && !millTokens.contains(token)
+        let playerTokens = tokens.filter { token in
+            return token.playerID == player.rawValue
+        }
+        
+        if playerTokens.count == 3 {
+            return playerTokens
+        }
+        
+        return playerTokens.filter { token in
+            return !millTokens.contains(token)
         }
     }
     
@@ -314,7 +330,7 @@ struct GameModel {
         }
     }
     
-    private func tokenCount(for player: Player) -> Int {
+    func tokenCount(for player: Player) -> Int {
         return tokens.filter { token in
             return token.playerID == player.rawValue
         }.count

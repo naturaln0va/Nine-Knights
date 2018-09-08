@@ -17,8 +17,8 @@ final class GameScene: SKScene {
     private var messageNode: SKLabelNode!
     private var selectedTokenNode: TokenNode?
     
+    private var highlightedTokens = [SKNode]()
     private var removableNodes = [TokenNode]()
-    private var selectedTokenNeighbors = [SKNode]()
 
     private var model = GameModel()
     private let successGenerator = UINotificationFeedbackGenerator()
@@ -156,7 +156,7 @@ final class GameScene: SKScene {
         let node = atPoint(location)
         
         if let selected = selectedTokenNode {
-            if selectedTokenNeighbors.contains(node) {
+            if highlightedTokens.contains(node) {
                 let selectedSceneLocation = convert(selected.position, from: boardNode)
                 
                 guard let fromCoord = gridCoordinate(at: selectedSceneLocation), let toCoord = boardNode.gridCoordinate(for: node) else {
@@ -178,17 +178,16 @@ final class GameScene: SKScene {
 
             selectedTokenNode = token
             
+            if model.tokenCount(for: model.currentPlayer) == 3 {
+                highlightTokens(at: model.emptyCoordinates)
+                return
+            }
+            
             guard let coord = gridCoordinate(at: location) else {
                 return
             }
             
-            selectedTokenNeighbors = model.neighbors(at: coord).compactMap { coord in
-                return self.boardNode.node(at: coord, named: BoardNode.boardPointNodeName)
-            }
-
-            for neighborNode in selectedTokenNeighbors {
-                neighborNode.run(SKAction.scale(to: 1.25, duration: 0.15))
-            }
+            highlightTokens(at: model.neighbors(at: coord))
         }
     }
     
@@ -223,18 +222,30 @@ final class GameScene: SKScene {
         return boardNode.gridCoordinate(for: boardPointNode)
     }
     
+    private func highlightTokens(at coords: [GameModel.GridCoordinate]) {
+        let tokensFromCoords = coords.compactMap { coord in
+            return self.boardNode.node(at: coord, named: BoardNode.boardPointNodeName)
+        }
+
+        highlightedTokens = tokensFromCoords
+        
+        for neighborNode in highlightedTokens {
+            neighborNode.run(SKAction.scale(to: 1.25, duration: 0.15))
+        }
+    }
+    
     private func deselectCurrentToken() {
-        guard !selectedTokenNeighbors.isEmpty else {
+        guard !highlightedTokens.isEmpty else {
             return
         }
         
         selectedTokenNode = nil
         
-        selectedTokenNeighbors.forEach { node in
+        highlightedTokens.forEach { node in
             node.run(SKAction.scale(to: 1, duration: 0.15))
         }
         
-        selectedTokenNeighbors.removeAll()
+        highlightedTokens.removeAll()
     }
     
     private func processGameUpdate() {
