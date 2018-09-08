@@ -259,7 +259,7 @@ struct GameModel {
         
         let tokenToRemove = tokens[index]
         
-        guard !millTokens.contains(tokenToRemove) else {
+        guard tokenCount(for: currentOpponent) == 3 || !millTokens.contains(tokenToRemove) else {
             return false
         }
         
