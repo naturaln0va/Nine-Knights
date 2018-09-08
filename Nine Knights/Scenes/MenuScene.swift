@@ -1,4 +1,5 @@
 
+import GameKit
 import SpriteKit
 
 final class MenuScene: SKScene {
@@ -13,12 +14,22 @@ final class MenuScene: SKScene {
         return view?.frame.size.height ?? 0
     }
     
+    private var localButton: ButtonNode!
+    private var onlineButton: ButtonNode!
+    
     // MARK: - Init
     
     override init() {
         super.init(size: .zero)
         
         scaleMode = .resizeFill
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(authenticationChanged(_:)),
+            name: .authenticationChanged,
+            object: nil
+        )
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -47,22 +58,30 @@ final class MenuScene: SKScene {
         
         let sceneMargin: CGFloat = 40
         let buttonWidth: CGFloat = viewWidth - (sceneMargin * 2)
+        let safeAreaTopInset = view?.window?.safeAreaInsets.top ?? 0
         let buttonSize = CGSize(width: buttonWidth, height: buttonWidth * 3 / 11)
         
-        let localPlayButton = ButtonNode("Local Play", size: buttonSize) {
+        localButton = ButtonNode("Local Play", size: buttonSize) {
             self.view?.presentScene(GameScene(), transition: SKTransition.crossFade(withDuration: 0.3))
         }
-        runningYOffset -= (sceneMargin * 2) + buttonSize.height
-        localPlayButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
-        addChild(localPlayButton)
+
+        runningYOffset -= safeAreaTopInset + sceneMargin + buttonSize.height
+        localButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
+        addChild(localButton)
         
-        let onlineButton = ButtonNode("Online Play", size: buttonSize) {
+        onlineButton = ButtonNode("Online Play", size: buttonSize) {
             
         }
         onlineButton.isEnabled = false
         runningYOffset -= sceneMargin + buttonSize.height
         onlineButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
         addChild(onlineButton)
+    }
+    
+    // MARK: - Notifications
+    
+    @objc private func authenticationChanged(_ notification: Notification) {
+        onlineButton.isEnabled = notification.object as? Bool ?? false
     }
 
 }

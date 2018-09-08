@@ -50,4 +50,24 @@ class ButtonNode: TouchNode {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        
+        guard isEnabled else {
+            return
+        }
+        
+        labelNode.run(SKAction.fadeAlpha(to: 0.8, duration: 0.2))
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        
+        guard isEnabled else {
+            return
+        }
+        
+        labelNode.run(SKAction.fadeAlpha(to: 1, duration: 0.2))
+    }
+    
 }
