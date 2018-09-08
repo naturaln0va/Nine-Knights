@@ -147,28 +147,28 @@ struct GameModel {
         }
     }
     
-    mutating func checkMill(for token: Token) -> Bool {
+    func mill(containing token: Token) -> [Token]? {
         var coordsToCheck = [token.coord]
         
         var xPositionsToCheck: [GridPosition] = [.min, .mid, .max]
         xPositionsToCheck.remove(at: token.coord.x.rawValue)
         
         guard let firstXPosition = xPositionsToCheck.first, let lastXPosition = xPositionsToCheck.last else {
-            return false
+            return nil
         }
         
         var yPositionsToCheck: [GridPosition] = [.min, .mid, .max]
         yPositionsToCheck.remove(at: token.coord.y.rawValue)
         
         guard let firstYPosition = yPositionsToCheck.first, let lastYPosition = yPositionsToCheck.last else {
-            return false
+            return nil
         }
         
         var layersToCheck: [GridLayer] = [.outer, .middle, .center]
         layersToCheck.remove(at: token.coord.layer.rawValue)
         
         guard let firstLayer = layersToCheck.first, let lastLayer = layersToCheck.last else {
-            return false
+            return nil
         }
 
         switch token.coord.x {
@@ -186,9 +186,7 @@ struct GameModel {
         }
         
         if validHorizontalMillTokens.count == 3 {
-            millTokens.append(contentsOf: validHorizontalMillTokens)
-            currentMill = validHorizontalMillTokens
-            return true
+            return validHorizontalMillTokens
         }
         
         coordsToCheck = [token.coord]
@@ -208,12 +206,10 @@ struct GameModel {
         }
         
         if validVerticalMillTokens.count == 3 {
-            millTokens.append(contentsOf: validVerticalMillTokens)
-            currentMill = validVerticalMillTokens
-            return true
+            return validVerticalMillTokens
         }
 
-        return false
+        return nil
     }
     
     mutating func placeToken(at coord: GridCoordinate) {
@@ -227,11 +223,13 @@ struct GameModel {
         tokens.append(newToken)
         tokensPlaced += 1
         
-        guard !checkMill(for: newToken) else {
+        guard let newMill = mill(containing: newToken) else {
+            advance()
             return
         }
         
-        advance()
+        millTokens.append(contentsOf: newMill)
+        currentMill = newMill
     }
     
     mutating func removeToken(at coord: GridCoordinate) -> Bool {
@@ -263,13 +261,33 @@ struct GameModel {
         let previousToken = tokens[index]
         let movedToken = Token(playerID: previousToken.playerID, coord: to)
         
+        let millToRemove = mill(containing: previousToken) ?? []
+        
+        if !millToRemove.isEmpty {
+            millToRemove.forEach { tokenToRemove in
+                guard let index = millTokens.index(of: tokenToRemove) else {
+                    return
+                }
+                
+                self.millTokens.remove(at: index)
+            }
+        }
+
         tokens[index] = movedToken
         
-        guard !checkMill(for: movedToken) else {
+        if !millToRemove.isEmpty {
+            for removedToken in millToRemove where removedToken != previousToken && mill(containing: removedToken) != nil {
+                millTokens.append(removedToken)
+            }
+        }
+        
+        guard let newMill = mill(containing: movedToken) else {
+            advance()
             return
         }
         
-        advance()
+        millTokens.append(contentsOf: newMill)
+        currentMill = newMill
     }
     
     mutating func advance() {
