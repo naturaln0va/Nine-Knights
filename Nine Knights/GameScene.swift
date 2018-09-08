@@ -246,6 +246,12 @@ final class GameScene: SKScene {
             
             let tokens = model.removableTokens(for: model.currentOpponent)
             
+            if tokens.isEmpty {
+                model.advance()
+                processGameUpdate()
+                return
+            }
+            
             let nodes = tokens.compactMap { token in
                 boardNode.node(at: token.coord, named: TokenNode.tokenNodeName) as? TokenNode
             }

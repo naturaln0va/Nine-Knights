@@ -8,8 +8,9 @@ struct GameModel {
     var tokens: [Token]
     var winner: Player?
     var tokensPlaced: Int
+    var millTokens: [Token]
     var removedToken: Token?
-    var millTokens: [Token]?
+    var currentMill: [Token]?
     var lastMove: (start: GridCoordinate, end: GridCoordinate)?
     
     var currentPlayer: Player {
@@ -48,7 +49,7 @@ struct GameModel {
     }
     
     var isCapturingPiece: Bool {
-        return millTokens?.isEmpty == false
+        return currentMill != nil
     }
     
     private(set) var isKnightTurn: Bool
@@ -64,6 +65,7 @@ struct GameModel {
         tokensPlaced = 0
         state = .placement
         tokens = [Token]()
+        millTokens = [Token]()
 
         positions = [
             GridCoordinate(x: .min, y: .max, layer: .outer),
@@ -140,17 +142,9 @@ struct GameModel {
     }
     
     func removableTokens(for player: Player) -> [Token] {
-        let playerTokens = tokens.filter {
-            return $0.playerID == player.rawValue
+        return tokens.filter { token in
+            return token.playerID == player.rawValue && !millTokens.contains(token)
         }
-        
-        if playerTokens.count <= 3 {
-            return playerTokens
-        }
-        
-        // #warning("Check for mills, and remove them!")
-        
-        return playerTokens // filter these
     }
     
     mutating func checkMill(for token: Token) -> Bool {
@@ -187,6 +181,18 @@ struct GameModel {
             coordsToCheck.append(GridCoordinate(x: token.coord.x, y: lastYPosition, layer: token.coord.layer))
         }
         
+        let validHorizontalMillTokens = tokens.filter {
+            return $0.playerID == token.playerID && coordsToCheck.contains($0.coord)
+        }
+        
+        if validHorizontalMillTokens.count == 3 {
+            millTokens.append(contentsOf: validHorizontalMillTokens)
+            currentMill = validHorizontalMillTokens
+            return true
+        }
+        
+        coordsToCheck = [token.coord]
+        
         switch token.coord.y {
         case .mid:
             coordsToCheck.append(GridCoordinate(x: token.coord.x, y: token.coord.y, layer: firstLayer))
@@ -197,12 +203,13 @@ struct GameModel {
             coordsToCheck.append(GridCoordinate(x: lastXPosition, y: token.coord.y, layer: token.coord.layer))
         }
 
-        let playerNeighborTokens = tokens.filter {
+        let validVerticalMillTokens = tokens.filter {
             return $0.playerID == token.playerID && coordsToCheck.contains($0.coord)
         }
         
-        if playerNeighborTokens.count == 3 {
-            millTokens = playerNeighborTokens
+        if validVerticalMillTokens.count == 3 {
+            millTokens.append(contentsOf: validVerticalMillTokens)
+            currentMill = validVerticalMillTokens
             return true
         }
 
@@ -236,8 +243,13 @@ struct GameModel {
             return false
         }
         
+        let tokenToRemove = tokens[index]
+        
+        guard !millTokens.contains(tokenToRemove) else {
+            return false
+        }
+        
         tokens.remove(at: index)
-        millTokens?.removeAll()
         advance()
         
         return true
@@ -260,12 +272,13 @@ struct GameModel {
         advance()
     }
     
-    private mutating func advance() {
-        if tokensPlaced == maxTokenCount {
+    mutating func advance() {
+        if tokensPlaced == maxTokenCount && state == .placement {
             state = .movement
         }
         
         turn += 1
+        currentMill = nil
 
         if state == .movement {
             if tokenCount(for: .knight) == 2 {
@@ -273,6 +286,9 @@ struct GameModel {
             }
             else if tokenCount(for: .troll) == 2 {
                 winner = Player.knight
+            }
+            else {
+                isKnightTurn = !isKnightTurn
             }
         }
         else {
@@ -314,7 +330,7 @@ extension GameModel {
         let layer: GridLayer
     }
     
-    struct Token {
+    struct Token: Equatable {
         let playerID: String
         let coord: GridCoordinate
     }
