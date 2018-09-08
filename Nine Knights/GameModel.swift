@@ -154,30 +154,58 @@ struct GameModel {
     }
     
     mutating func checkMill(for token: Token) -> Bool {
-        let playerTokens = tokens.filter {
-            return $0.playerID == token.playerID
+        var coordsToCheck = [token.coord]
+        
+        var xPositionsToCheck: [GridPosition] = [.min, .mid, .max]
+        xPositionsToCheck.remove(at: token.coord.x.rawValue)
+        
+        guard let firstXPosition = xPositionsToCheck.first, let lastXPosition = xPositionsToCheck.last else {
+            return false
         }
         
-        let horizontalMillTokens = playerTokens.filter {
-            return $0.coord.x == token.coord.x && (token.coord.x == .mid ? true : $0.coord.layer == token.coord.layer)
+        var yPositionsToCheck: [GridPosition] = [.min, .mid, .max]
+        yPositionsToCheck.remove(at: token.coord.y.rawValue)
+        
+        guard let firstYPosition = yPositionsToCheck.first, let lastYPosition = yPositionsToCheck.last else {
+            return false
         }
         
-        if horizontalMillTokens.count == 3 {
-            print("Detected a new horizontal mill for: \(token.playerID)")
-            millTokens = horizontalMillTokens
+        var layersToCheck: [GridLayer] = [.outer, .middle, .center]
+        layersToCheck.remove(at: token.coord.layer.rawValue)
+        
+        guard let firstLayer = layersToCheck.first, let lastLayer = layersToCheck.last else {
+            return false
+        }
+
+        switch token.coord.x {
+        case .mid:
+            coordsToCheck.append(GridCoordinate(x: token.coord.x, y: token.coord.y, layer: firstLayer))
+            coordsToCheck.append(GridCoordinate(x: token.coord.x, y: token.coord.y, layer: lastLayer))
+            
+        case .min, .max:
+            coordsToCheck.append(GridCoordinate(x: token.coord.x, y: firstYPosition, layer: token.coord.layer))
+            coordsToCheck.append(GridCoordinate(x: token.coord.x, y: lastYPosition, layer: token.coord.layer))
+        }
+        
+        switch token.coord.y {
+        case .mid:
+            coordsToCheck.append(GridCoordinate(x: token.coord.x, y: token.coord.y, layer: firstLayer))
+            coordsToCheck.append(GridCoordinate(x: token.coord.x, y: token.coord.y, layer: lastLayer))
+
+        case .min, .max:
+            coordsToCheck.append(GridCoordinate(x: firstXPosition, y: token.coord.y, layer: token.coord.layer))
+            coordsToCheck.append(GridCoordinate(x: lastXPosition, y: token.coord.y, layer: token.coord.layer))
+        }
+
+        let playerNeighborTokens = tokens.filter {
+            return $0.playerID == token.playerID && coordsToCheck.contains($0.coord)
+        }
+        
+        if playerNeighborTokens.count == 3 {
+            millTokens = playerNeighborTokens
             return true
         }
-        
-        let verticalMillTokens = playerTokens.filter {
-            return $0.coord.y == token.coord.y && (token.coord.y == .mid ? true : $0.coord.layer == token.coord.layer)
-        }
-        
-        if verticalMillTokens.count == 3 {
-            print("Detected a new vertical mill for: \(token.playerID)")
-            millTokens = verticalMillTokens
-            return true
-        }
-        
+
         return false
     }
     
