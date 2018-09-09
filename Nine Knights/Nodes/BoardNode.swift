@@ -112,7 +112,7 @@ final class BoardNode: SKNode {
             boardPointNode.name = BoardNode.boardPointNodeName
             boardPointNode.lineWidth = lineWidth
             boardPointNode.position = position
-            boardPointNode.fillColor = .black
+            boardPointNode.fillColor = SKColor(red: 0.1216, green: 0.1216, blue: 0.1216, alpha: 1)
             boardPointNode.strokeColor = .red
             
             node.addChild(boardPointNode)

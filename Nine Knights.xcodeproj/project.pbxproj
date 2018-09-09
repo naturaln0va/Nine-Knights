@@ -17,6 +17,7 @@
 		481215E8213CC2DB00AE0010 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481215E7213CC2DB00AE0010 /* GameScene.swift */; };
 		481215EA213CC30400AE0010 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481215E9213CC30400AE0010 /* GameViewController.swift */; };
 		481B9027213F45AA00B258CB /* BoardNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481B9026213F45AA00B258CB /* BoardNode.swift */; };
+		4833757A21448E3A00F31717 /* GKTurnBasedMatch+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4833757921448E3A00F31717 /* GKTurnBasedMatch+Additions.swift */; };
 		48342E24213CB89300E0663C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48342E23213CB89300E0663C /* AppDelegate.swift */; };
 		48342E2B213CB89500E0663C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 48342E2A213CB89500E0663C /* Assets.xcassets */; };
 		48342E2E213CB89500E0663C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48342E2C213CB89500E0663C /* LaunchScreen.storyboard */; };
@@ -36,6 +37,7 @@
 		481215E7213CC2DB00AE0010 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		481215E9213CC30400AE0010 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		481B9026213F45AA00B258CB /* BoardNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardNode.swift; sourceTree = "<group>"; };
+		4833757921448E3A00F31717 /* GKTurnBasedMatch+Additions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GKTurnBasedMatch+Additions.swift"; sourceTree = "<group>"; };
 		48342E20213CB89300E0663C /* Nine Knights.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Nine Knights.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		48342E23213CB89300E0663C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		48342E2A213CB89500E0663C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 		480789A5214416A1004AF234 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				4833757921448E3A00F31717 /* GKTurnBasedMatch+Additions.swift */,
 				480789A621441927004AF234 /* SKTexture+Additions.swift */,
 			);
 			path = Extensions;
@@ -232,6 +235,7 @@
 				480789A221441127004AF234 /* MenuScene.swift in Sources */,
 				481215EA213CC30400AE0010 /* GameViewController.swift in Sources */,
 				48342E24213CB89300E0663C /* AppDelegate.swift in Sources */,
+				4833757A21448E3A00F31717 /* GKTurnBasedMatch+Additions.swift in Sources */,
 				48564299213F846B006C2E71 /* GameModel.swift in Sources */,
 				480789A721441927004AF234 /* SKTexture+Additions.swift in Sources */,
 				480789A92144194E004AF234 /* BackgroundNode.swift in Sources */,

@@ -13,14 +13,17 @@ final class GameScene: SKScene {
     
     // MARK: - Properties
     
+    private var model: GameModel
+    
     private var boardNode: BoardNode!
     private var messageNode: SKLabelNode!
     private var selectedTokenNode: TokenNode?
     
     private var highlightedTokens = [SKNode]()
     private var removableNodes = [TokenNode]()
+    
+    private var isSendingTurn = false
 
-    private var model = GameModel()
     private let successGenerator = UINotificationFeedbackGenerator()
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
 
@@ -36,7 +39,9 @@ final class GameScene: SKScene {
     
     // MARK: - Init
     
-    override init() {
+    init(model: GameModel) {
+        self.model = model
+        
         super.init(size: .zero)
         
         scaleMode = .resizeFill
@@ -67,7 +72,9 @@ final class GameScene: SKScene {
             return
         }
         
-        backgroundColor = .black
+        let sceneMargin: CGFloat = 40
+        let safeAreaTopInset = view?.window?.safeAreaInsets.top ?? 0
+        let safeAreaBottomInset = view?.window?.safeAreaInsets.bottom ?? 0
 
         let padding: CGFloat = 24
         boardNode = BoardNode(sideLength: min(viewWidth, viewHeight) - (padding * 2))
@@ -77,6 +84,7 @@ final class GameScene: SKScene {
             x: viewWidth / 2,
             y: viewHeight / 2
         )
+        boardNode.alpha = GameCenterHelper.helper.canTakeTurnForCurrentMatch ? 1 : 0.35
         
         addChild(boardNode)
         
@@ -85,12 +93,25 @@ final class GameScene: SKScene {
         messageNode.text = model.messageToDisplay
         messageNode.position = CGPoint(
             x: viewWidth / 2,
-            y: 125
+            y: safeAreaBottomInset + sceneMargin
         )
         messageNode.fontColor = .white
         messageNode.fontSize = 20
         
         addChild(messageNode)
+        
+        let buttonSize = CGSize(width: 250, height: 50)
+        let menuButton = ButtonNode("Return to Menu", size: buttonSize) {
+            self.returnToMenu()
+        }
+        menuButton.position = CGPoint(
+            x: (viewWidth - buttonSize.width) / 2,
+            y: viewHeight - safeAreaTopInset - (sceneMargin * 2)
+        )
+        
+        addChild(menuButton)
+        
+        loadTokens()
     }
     
     // MARK: - Touches
@@ -102,6 +123,10 @@ final class GameScene: SKScene {
     }
     
     private func handleTouch(_ touch: UITouch) {
+        guard !isSendingTurn && GameCenterHelper.helper.canTakeTurnForCurrentMatch else {
+            return
+        }
+        
         guard model.winner == nil else {
             return
         }
@@ -124,8 +149,18 @@ final class GameScene: SKScene {
     
     // MARK: - Spawning
     
-    private func spawnToken(at point: CGPoint) {
-        let tokenNode = TokenNode(type: model.currentPlayer)
+    private func loadTokens() {
+        for token in model.tokens {
+            guard let boardPointNode = boardNode.node(at: token.coord, named: BoardNode.boardPointNodeName) else {
+                return
+            }
+            
+            spawnToken(at: boardPointNode.position, for: token.player)
+        }
+    }
+    
+    private func spawnToken(at point: CGPoint, for player: GameModel.Player) {
+        let tokenNode = TokenNode(type: player)
         
         tokenNode.zPosition = NodeLayer.token.rawValue
         tokenNode.position = point
@@ -134,6 +169,10 @@ final class GameScene: SKScene {
     }
     
     // MARK: - Helpers
+    
+    private func returnToMenu() {
+        view?.presentScene(MenuScene(), transition: SKTransition.moveIn(with: .left, duration: 0.3))
+    }
     
     private func handlePlacement(at location: CGPoint) {
         let node = atPoint(location)
@@ -146,7 +185,7 @@ final class GameScene: SKScene {
             return
         }
         
-        spawnToken(at: node.position)
+        spawnToken(at: node.position, for: model.currentPlayer)
         model.placeToken(at: coord)
         
         processGameUpdate()
@@ -276,6 +315,27 @@ final class GameScene: SKScene {
         else {
             feedbackGenerator.impactOccurred()
             feedbackGenerator.prepare()
+            
+            if model.winner != nil {
+                GameCenterHelper.helper.win { error in
+                    if let e = error {
+                        print("Error winning match: \(e.localizedDescription)")
+                        return
+                    }
+                    
+                    self.returnToMenu()
+                }
+            }
+            else {
+                GameCenterHelper.helper.endTurn(model) { error in
+                    if let e = error {
+                        print("Error ending turn: \(e.localizedDescription)")
+                        return
+                    }
+                    
+                    self.returnToMenu()
+                }
+            }
         }
     }
 

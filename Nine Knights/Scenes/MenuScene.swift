@@ -4,6 +4,7 @@ import SpriteKit
 
 final class MenuScene: SKScene {
     
+    private let transition = SKTransition.moveIn(with: .right, duration: 0.3)
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     private var viewWidth: CGFloat {
@@ -30,6 +31,13 @@ final class MenuScene: SKScene {
             name: .authenticationChanged,
             object: nil
         )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(presentGame(_:)),
+            name: .presentGame,
+            object: nil
+        )
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -39,6 +47,7 @@ final class MenuScene: SKScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         
+        GameCenterHelper.helper.currentMatch = nil
         feedbackGenerator.prepare()
         
         setUpScene(in: view)
@@ -61,18 +70,18 @@ final class MenuScene: SKScene {
         let safeAreaTopInset = view?.window?.safeAreaInsets.top ?? 0
         let buttonSize = CGSize(width: buttonWidth, height: buttonWidth * 3 / 11)
         
-        localButton = ButtonNode("Local Play", size: buttonSize) {
-            self.view?.presentScene(GameScene(), transition: SKTransition.crossFade(withDuration: 0.3))
+        localButton = ButtonNode("Local Game", size: buttonSize) {
+            self.view?.presentScene(GameScene(model: GameModel()), transition: self.transition)
         }
 
         runningYOffset -= safeAreaTopInset + sceneMargin + buttonSize.height
         localButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
         addChild(localButton)
         
-        onlineButton = ButtonNode("Online Play", size: buttonSize) {
-            
+        onlineButton = ButtonNode("Online Game", size: buttonSize) {
+            GameCenterHelper.helper.presentMatchmaker()
         }
-        onlineButton.isEnabled = false
+        onlineButton.isEnabled = GameCenterHelper.helper.isAuthenticated
         runningYOffset -= sceneMargin + buttonSize.height
         onlineButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
         addChild(onlineButton)
@@ -82,6 +91,30 @@ final class MenuScene: SKScene {
     
     @objc private func authenticationChanged(_ notification: Notification) {
         onlineButton.isEnabled = notification.object as? Bool ?? false
+    }
+    
+    @objc private func presentGame(_ notification: Notification) {
+        guard let match = notification.object as? GKTurnBasedMatch else {
+            return
+        }
+        
+        match.loadMatchData { data, error in
+            let model: GameModel
+            
+            if let data = data {
+                do {
+                    model = try JSONDecoder().decode(GameModel.self, from: data)
+                }
+                catch {
+                    model = GameModel()
+                }
+            }
+            else {
+                model = GameModel()
+            }
+            
+            self.view?.presentScene(GameScene(model: model), transition: self.transition)
+        }
     }
 
 }

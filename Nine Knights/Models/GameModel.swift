@@ -1,17 +1,17 @@
 
-import Foundation
+import GameKit
 
-struct GameModel {
+struct GameModel: Codable {
     
     var turn: Int
     var state: State
+    var lastMove: Move?
     var tokens: [Token]
     var winner: Player?
     var tokensPlaced: Int
     var millTokens: [Token]
     var removedToken: Token?
     var currentMill: [Token]?
-    var lastMove: (start: GridCoordinate, end: GridCoordinate)?
     
     var currentPlayer: Player {
         return isKnightTurn ? .knight : .troll
@@ -151,7 +151,7 @@ struct GameModel {
     
     func removableTokens(for player: Player) -> [Token] {
         let playerTokens = tokens.filter { token in
-            return token.playerID == player.rawValue
+            return token.player == player
         }
         
         if playerTokens.count == 3 {
@@ -198,7 +198,7 @@ struct GameModel {
         }
         
         let validHorizontalMillTokens = tokens.filter {
-            return $0.playerID == token.playerID && coordsToCheck.contains($0.coord)
+            return $0.player == token.player && coordsToCheck.contains($0.coord)
         }
         
         if validHorizontalMillTokens.count == 3 {
@@ -218,7 +218,7 @@ struct GameModel {
         }
 
         let validVerticalMillTokens = tokens.filter {
-            return $0.playerID == token.playerID && coordsToCheck.contains($0.coord)
+            return $0.player == token.player && coordsToCheck.contains($0.coord)
         }
         
         if validVerticalMillTokens.count == 3 {
@@ -233,11 +233,13 @@ struct GameModel {
             return
         }
         
-        let playerID = isKnightTurn ? Player.knight.rawValue : Player.troll.rawValue
+        let player = isKnightTurn ? Player.knight : Player.troll
         
-        let newToken = Token(playerID: playerID, coord: coord)
+        let newToken = Token(player: player, coord: coord)
         tokens.append(newToken)
         tokensPlaced += 1
+        
+        lastMove = Move(placed: coord)
         
         guard let newMill = mill(containing: newToken) else {
             advance()
@@ -264,6 +266,7 @@ struct GameModel {
         }
         
         tokens.remove(at: index)
+        lastMove = Move(removed: coord)
         advance()
         
         return true
@@ -275,7 +278,7 @@ struct GameModel {
         }
 
         let previousToken = tokens[index]
-        let movedToken = Token(playerID: previousToken.playerID, coord: to)
+        let movedToken = Token(player: previousToken.player, coord: to)
         
         let millToRemove = mill(containing: previousToken) ?? []
         
@@ -290,6 +293,7 @@ struct GameModel {
         }
 
         tokens[index] = movedToken
+        lastMove = Move(start: from, end: to)
         
         if !millToRemove.isEmpty {
             for removedToken in millToRemove where removedToken != previousToken && mill(containing: removedToken) != nil {
@@ -332,7 +336,7 @@ struct GameModel {
     
     func tokenCount(for player: Player) -> Int {
         return tokens.filter { token in
-            return token.playerID == player.rawValue
+            return token.player == player
         }.count
     }
     
@@ -342,31 +346,51 @@ struct GameModel {
 
 extension GameModel {
     
-    enum Player: String {
+    enum Player: String, Codable {
         case knight, troll
     }
     
-    enum State {
+    enum State: Int, Codable {
         case placement
         case movement
     }
 
-    enum GridPosition: Int {
+    enum GridPosition: Int, Codable {
         case min, mid, max
     }
     
-    enum GridLayer: Int {
+    enum GridLayer: Int, Codable {
         case outer, middle, center
     }
     
-    struct GridCoordinate: Equatable {
+    struct GridCoordinate: Codable, Equatable {
         let x, y: GridPosition
         let layer: GridLayer
     }
     
-    struct Token: Equatable {
-        let playerID: String
+    struct Token: Codable, Equatable {
+        let player: Player
         let coord: GridCoordinate
+    }
+    
+    struct Move: Codable, Equatable {
+        var placed: GridCoordinate?
+        var removed: GridCoordinate?
+        var start: GridCoordinate?
+        var end: GridCoordinate?
+        
+        init(placed: GridCoordinate?) {
+            self.placed = placed
+        }
+        
+        init(removed: GridCoordinate?) {
+            self.removed = removed
+        }
+        
+        init(start: GridCoordinate?, end: GridCoordinate?) {
+            self.start = start
+            self.end = end
+        }
     }
 
 }
