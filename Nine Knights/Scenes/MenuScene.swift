@@ -4,7 +4,7 @@ import SpriteKit
 
 final class MenuScene: SKScene {
     
-    private let transition = SKTransition.moveIn(with: .right, duration: 0.3)
+    private let transition = SKTransition.push(with: .up, duration: 0.3)
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     private var viewWidth: CGFloat {
@@ -63,6 +63,8 @@ final class MenuScene: SKScene {
             return
         }
         
+        backgroundColor = .sky
+        
         var runningYOffset = viewHeight
         
         let sceneMargin: CGFloat = 40
@@ -70,11 +72,34 @@ final class MenuScene: SKScene {
         let safeAreaTopInset = view?.window?.safeAreaInsets.top ?? 0
         let buttonSize = CGSize(width: buttonWidth, height: buttonWidth * 3 / 11)
         
+        runningYOffset -= safeAreaTopInset + (sceneMargin * 3)
+
+        let logoNode = SKSpriteNode(imageNamed: "title-logo")
+        logoNode.position = CGPoint(
+            x: viewWidth / 2,
+            y: runningYOffset
+        )
+        addChild(logoNode)
+        
+        let groundNode = SKSpriteNode(imageNamed: "ground")
+        groundNode.position = CGPoint(
+            x: viewWidth / 2,
+            y: (groundNode.size.height / 2) - sceneMargin
+        )
+        addChild(groundNode)
+        
+        let sunNode = SKSpriteNode(imageNamed: "sun")
+        sunNode.position = CGPoint(
+            x: viewWidth - (sceneMargin * 1.3),
+            y: viewHeight - safeAreaTopInset - (sceneMargin * 1.25)
+        )
+        addChild(sunNode)
+        
         localButton = ButtonNode("Local Game", size: buttonSize) {
             self.view?.presentScene(GameScene(model: GameModel()), transition: self.transition)
         }
-
-        runningYOffset -= safeAreaTopInset + sceneMargin + buttonSize.height
+        
+        runningYOffset -= sceneMargin + logoNode.size.height
         localButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
         addChild(localButton)
         

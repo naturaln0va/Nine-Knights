@@ -24,10 +24,13 @@ final class TokenNode: SKSpriteNode {
     init(type: GameModel.Player) {
         self.type = type
         
+        let textureName = "\(type.rawValue)-token"
+        let texture = SKTexture(imageNamed: textureName)
+        
         super.init(
-            texture: nil,
-            color: type == .knight ? .magenta : .green,
-            size: CGSize(width: 28, height: 28)
+            texture: texture,
+            color: .clear,
+            size: texture.size()
         )
         
         name = TokenNode.tokenNodeName

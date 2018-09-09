@@ -6,8 +6,9 @@ final class GameScene: SKScene {
     // MARK: - Enums
     
     private enum NodeLayer: CGFloat {
-        case board = 100
-        case token = 101
+        case background = 100
+        case board = 101
+        case token = 102
         case ui = 1000
     }
     
@@ -16,7 +17,7 @@ final class GameScene: SKScene {
     private var model: GameModel
     
     private var boardNode: BoardNode!
-    private var messageNode: SKLabelNode!
+    private var messageNode: InformationNode!
     private var selectedTokenNode: TokenNode?
     
     private var highlightedTokens = [SKNode]()
@@ -72,43 +73,64 @@ final class GameScene: SKScene {
             return
         }
         
+        backgroundColor = .background
+        
+        var runningYOffset: CGFloat = 0
+
         let sceneMargin: CGFloat = 40
         let safeAreaTopInset = view?.window?.safeAreaInsets.top ?? 0
         let safeAreaBottomInset = view?.window?.safeAreaInsets.bottom ?? 0
-
-        let padding: CGFloat = 24
-        boardNode = BoardNode(sideLength: min(viewWidth, viewHeight) - (padding * 2))
         
+        let padding: CGFloat = 24
+        let boardSize = min(viewWidth, viewHeight) - (padding * 2)
+        boardNode = BoardNode(sideLength: boardSize)
         boardNode.zPosition = NodeLayer.board.rawValue
+        runningYOffset += safeAreaBottomInset + sceneMargin + (boardSize / 2)
         boardNode.position = CGPoint(
             x: viewWidth / 2,
-            y: viewHeight / 2
+            y: runningYOffset
         )
         boardNode.alpha = GameCenterHelper.helper.canTakeTurnForCurrentMatch ? 1 : 0.35
         
         addChild(boardNode)
         
-        messageNode = SKLabelNode(fontNamed: "Chalkduster")
-        messageNode.zPosition = NodeLayer.ui.rawValue
-        messageNode.text = model.messageToDisplay
-        messageNode.position = CGPoint(
+        let groundNode = SKSpriteNode(imageNamed: "ground")
+        groundNode.zPosition = NodeLayer.background.rawValue
+        runningYOffset += sceneMargin + (boardSize / 2) + (groundNode.size.height / 2)
+        groundNode.position = CGPoint(
             x: viewWidth / 2,
-            y: safeAreaBottomInset + sceneMargin
+            y: runningYOffset
         )
-        messageNode.fontColor = .white
-        messageNode.fontSize = 20
+        addChild(groundNode)
+        
+        messageNode = InformationNode(model.messageToDisplay, size: CGSize(width: viewWidth - (sceneMargin * 2), height: 40))
+        messageNode.zPosition = NodeLayer.ui.rawValue
+        messageNode.position = CGPoint(
+            x: sceneMargin,
+            y: runningYOffset
+        )
         
         addChild(messageNode)
         
-        let buttonSize = CGSize(width: 250, height: 50)
-        let menuButton = ButtonNode("Return to Menu", size: buttonSize) {
+        let skySize = CGSize(width: viewWidth, height: viewHeight - groundNode.position.y)
+        let skyNode = SKSpriteNode(color: .sky, size: skySize)
+        skyNode.zPosition = NodeLayer.background.rawValue - 1
+        runningYOffset -= skyNode.size.height / 2
+        skyNode.position = CGPoint(
+            x: viewWidth / 2,
+            y: viewHeight - (skySize.height / 2)
+        )
+        addChild(skyNode)
+        
+        let buttonSize = CGSize(width: 125, height: 50)
+        let menuButton = ButtonNode("Menu", size: buttonSize) {
             self.returnToMenu()
         }
         menuButton.position = CGPoint(
             x: (viewWidth - buttonSize.width) / 2,
             y: viewHeight - safeAreaTopInset - (sceneMargin * 2)
         )
-        
+        menuButton.zPosition = NodeLayer.ui.rawValue
         addChild(menuButton)
         
         loadTokens()
@@ -171,7 +193,7 @@ final class GameScene: SKScene {
     // MARK: - Helpers
     
     private func returnToMenu() {
-        view?.presentScene(MenuScene(), transition: SKTransition.moveIn(with: .left, duration: 0.3))
+        view?.presentScene(MenuScene(), transition: SKTransition.push(with: .down, duration: 0.3))
     }
     
     private func handlePlacement(at location: CGPoint) {
@@ -274,11 +296,11 @@ final class GameScene: SKScene {
     }
     
     private func deselectCurrentToken() {
+        selectedTokenNode = nil
+
         guard !highlightedTokens.isEmpty else {
             return
         }
-        
-        selectedTokenNode = nil
         
         highlightedTokens.forEach { node in
             node.run(SKAction.scale(to: 1, duration: 0.15))

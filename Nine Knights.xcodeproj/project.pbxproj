@@ -23,6 +23,8 @@
 		48342E2E213CB89500E0663C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48342E2C213CB89500E0663C /* LaunchScreen.storyboard */; };
 		48564294213F7CEB006C2E71 /* TokenNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48564293213F7CEB006C2E71 /* TokenNode.swift */; };
 		48564299213F846B006C2E71 /* GameModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48564298213F846B006C2E71 /* GameModel.swift */; };
+		48DC82742145C80000FE3F7E /* UIColor+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DC82732145C80000FE3F7E /* UIColor+Additions.swift */; };
+		48DC82782145E31B00FE3F7E /* InformationNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DC82772145E31B00FE3F7E /* InformationNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +47,8 @@
 		48342E2F213CB89500E0663C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		48564293213F7CEB006C2E71 /* TokenNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenNode.swift; sourceTree = "<group>"; };
 		48564298213F846B006C2E71 /* GameModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModel.swift; sourceTree = "<group>"; };
+		48DC82732145C80000FE3F7E /* UIColor+Additions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Additions.swift"; sourceTree = "<group>"; };
+		48DC82772145E31B00FE3F7E /* InformationNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +77,7 @@
 			children = (
 				4833757921448E3A00F31717 /* GKTurnBasedMatch+Additions.swift */,
 				480789A621441927004AF234 /* SKTexture+Additions.swift */,
+				48DC82732145C80000FE3F7E /* UIColor+Additions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -110,6 +115,7 @@
 				480789A82144194E004AF234 /* BackgroundNode.swift */,
 				481B9026213F45AA00B258CB /* BoardNode.swift */,
 				480789AA21441975004AF234 /* ButtonNode.swift */,
+				48DC82772145E31B00FE3F7E /* InformationNode.swift */,
 				48564293213F7CEB006C2E71 /* TokenNode.swift */,
 				480789A321441675004AF234 /* TouchNode.swift */,
 			);
@@ -226,6 +232,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48DC82782145E31B00FE3F7E /* InformationNode.swift in Sources */,
 				480789B021443784004AF234 /* GameCenterHelper.swift in Sources */,
 				481B9027213F45AA00B258CB /* BoardNode.swift in Sources */,
 				481215E8213CC2DB00AE0010 /* GameScene.swift in Sources */,
@@ -239,6 +246,7 @@
 				48564299213F846B006C2E71 /* GameModel.swift in Sources */,
 				480789A721441927004AF234 /* SKTexture+Additions.swift in Sources */,
 				480789A92144194E004AF234 /* BackgroundNode.swift in Sources */,
+				48DC82742145C80000FE3F7E /* UIColor+Additions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

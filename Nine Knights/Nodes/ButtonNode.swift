@@ -6,9 +6,6 @@ class ButtonNode: TouchNode {
     private let backgroundNode: BackgroundNode
     private let labelNode: SKLabelNode
     
-    private let backgroundColor = UIColor(white: 0, alpha: 0.25)
-    private let selectedBackgroundColor = UIColor(white: 0, alpha: 0.6)
-    
     init(_ text: String, size: CGSize, actionBlock: ActionBlock?) {
         backgroundNode = BackgroundNode(kind: .recessed, size: size)
         backgroundNode.position = CGPoint(
