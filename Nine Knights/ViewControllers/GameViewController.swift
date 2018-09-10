@@ -26,30 +26,25 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import UIKit
 import SpriteKit
 
-class BackgroundNode: SKSpriteNode {
+final class GameViewController: UIViewController {
   
-  enum Kind {
-    case pill
-    case recessed
+  private var skView: SKView {
+    return view as! SKView
   }
   
-  init(kind: Kind, size: CGSize, color: UIColor? = nil) {
-    let texture: SKTexture
-    
-    switch kind {
-    case .pill:
-      texture = SKTexture.pillBackgroundTexture(of: size, color: color)
-    default:
-      texture = SKTexture.recessedBackgroundTexture(of: size)
-    }
-    
-    super.init(texture: texture, color: .clear, size: size)
+  override func loadView() {
+    view = SKView()
   }
   
-  required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    skView.presentScene(MenuScene())
+    
+    GameCenterHelper.helper.viewController = self
   }
   
 }
