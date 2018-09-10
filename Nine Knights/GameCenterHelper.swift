@@ -100,7 +100,9 @@ final class GameCenterHelper: NSObject {
 extension GameCenterHelper: GKTurnBasedMatchmakerViewControllerDelegate {
     
     func turnBasedMatchmakerViewControllerWasCancelled(_ viewController: GKTurnBasedMatchmakerViewController) {
-        viewController.dismiss(animated: true)
+        viewController.dismiss(animated: true) {
+            self.currentMatchmakerVC = nil
+        }
     }
 
     func turnBasedMatchmakerViewController(_ viewController: GKTurnBasedMatchmakerViewController, didFailWithError error: Error) {
@@ -149,9 +151,15 @@ extension GameCenterHelper: GKLocalPlayerListener {
         
         currentMatch = match
         
-        viewController?.dismiss(animated: true) {
+        if let vc = currentMatchmakerVC {
+            vc.dismiss(animated: true) {
+                self.currentMatchmakerVC = nil
+                NotificationCenter.default.post(name: .presentGame, object: match)
+            }
+        }
+        else {
             NotificationCenter.default.post(name: .presentGame, object: match)
-        }        
+        }
     }
 
 }
