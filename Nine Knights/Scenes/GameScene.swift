@@ -82,21 +82,32 @@ final class GameScene: SKScene {
         let safeAreaBottomInset = view?.window?.safeAreaInsets.bottom ?? 0
         
         let padding: CGFloat = 24
-        let boardSize = min(viewWidth, viewHeight) - (padding * 2)
-        boardNode = BoardNode(sideLength: boardSize)
+        let boardSideLength = min(viewWidth, viewHeight) - (padding * 2)
+        boardNode = BoardNode(sideLength: boardSideLength)
         boardNode.zPosition = NodeLayer.board.rawValue
-        runningYOffset += safeAreaBottomInset + sceneMargin + (boardSize / 2)
+        runningYOffset += safeAreaBottomInset + sceneMargin + (boardSideLength / 2)
         boardNode.position = CGPoint(
             x: viewWidth / 2,
             y: runningYOffset
         )
-        boardNode.alpha = GameCenterHelper.helper.canTakeTurnForCurrentMatch ? 1 : 0.35
         
         addChild(boardNode)
         
+        if !GameCenterHelper.helper.canTakeTurnForCurrentMatch {
+            let coverSize = CGSize(
+                width: boardSideLength + 50,
+                height: boardSideLength + 50
+            )
+            let coverNode = SKSpriteNode(color: .background, size: coverSize)
+            coverNode.zPosition = NodeLayer.ui.rawValue + 1
+            coverNode.position = boardNode.position
+            coverNode.alpha = 0.6
+            addChild(coverNode)
+        }
+        
         let groundNode = SKSpriteNode(imageNamed: "ground")
         groundNode.zPosition = NodeLayer.background.rawValue
-        runningYOffset += sceneMargin + (boardSize / 2) + (groundNode.size.height / 2)
+        runningYOffset += sceneMargin + (boardSideLength / 2) + (groundNode.size.height / 2)
         groundNode.position = CGPoint(
             x: viewWidth / 2,
             y: runningYOffset
