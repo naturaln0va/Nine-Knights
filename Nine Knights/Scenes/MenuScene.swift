@@ -17,6 +17,7 @@ final class MenuScene: SKScene {
     
     private var localButton: ButtonNode!
     private var onlineButton: ButtonNode!
+    private var updateNode: InformationNode!
     
     // MARK: - Init
     
@@ -36,6 +37,13 @@ final class MenuScene: SKScene {
             self,
             selector: #selector(presentGame(_:)),
             name: .presentGame,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(receivedNewTurn(_:)),
+            name: .receivedNewTurn,
             object: nil
         )
     }
@@ -110,6 +118,12 @@ final class MenuScene: SKScene {
         runningYOffset -= sceneMargin + buttonSize.height
         onlineButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
         addChild(onlineButton)
+        
+        updateNode = InformationNode("Received a new turn!", size: CGSize(width: buttonSize.width, height: 40))
+        updateNode.alpha = 0
+        runningYOffset -= sceneMargin + 40
+        updateNode.position = CGPoint(x: sceneMargin, y: runningYOffset)
+        addChild(updateNode)
     }
     
     // MARK: - Notifications
@@ -140,6 +154,15 @@ final class MenuScene: SKScene {
             
             self.view?.presentScene(GameScene(model: model), transition: self.transition)
         }
+    }
+    
+    @objc private func receivedNewTurn(_ notification: Notification) {
+        let flashActions = [
+            SKAction.fadeIn(withDuration: 0.15),
+            SKAction.wait(forDuration: 2),
+            SKAction.fadeOut(withDuration: 0.15)
+        ]
+        updateNode.run(SKAction.sequence(flashActions))
     }
 
 }

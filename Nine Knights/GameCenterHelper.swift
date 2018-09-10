@@ -146,6 +146,8 @@ extension GameCenterHelper: GKLocalPlayerListener {
         print("\(player.displayName): received a turn event for match: \(match.matchID). Did become active: \(didBecomeActive)")
 
         guard didBecomeActive else {
+            NotificationCenter.default.post(name: .receivedNewTurn, object: match)
+
             return
         }
         
@@ -167,6 +169,7 @@ extension GameCenterHelper: GKLocalPlayerListener {
 extension Notification.Name {
     
     static let presentGame = Notification.Name(rawValue: "presentGame")
+    static let receivedNewTurn = Notification.Name(rawValue: "receivedNewTurn")
     static let authenticationChanged = Notification.Name(rawValue: "authenticationChanged")
 
 }
