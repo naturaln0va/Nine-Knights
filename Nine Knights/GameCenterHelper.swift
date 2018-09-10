@@ -147,12 +147,9 @@ extension GameCenterHelper: GKLocalPlayerListener {
 
         guard didBecomeActive else {
             NotificationCenter.default.post(name: .receivedNewTurn, object: match)
-
             return
         }
-        
-        currentMatch = match
-        
+                
         if let vc = currentMatchmakerVC {
             vc.dismiss(animated: true) {
                 self.currentMatchmakerVC = nil

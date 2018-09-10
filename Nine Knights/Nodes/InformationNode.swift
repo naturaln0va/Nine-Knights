@@ -1,7 +1,7 @@
 
 import SpriteKit
 
-final class InformationNode: SKNode {
+final class InformationNode: TouchNode {
     
     private let backgroundNode: BackgroundNode
     private let labelNode: SKLabelNode
@@ -15,7 +15,7 @@ final class InformationNode: SKNode {
         }
     }
 
-    init(_ text: String, size: CGSize) {
+    init(_ text: String, size: CGSize, actionBlock: ActionBlock? = nil) {
         backgroundNode = BackgroundNode(kind: .pill, size: size)
         backgroundNode.position = CGPoint(
             x: size.width / 2,
@@ -37,6 +37,8 @@ final class InformationNode: SKNode {
         
         addChild(backgroundNode)
         addChild(labelNode)
+        
+        self.actionBlock = actionBlock
     }
     
     required init?(coder aDecoder: NSCoder) {

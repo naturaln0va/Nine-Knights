@@ -19,6 +19,8 @@ final class MenuScene: SKScene {
     private var onlineButton: ButtonNode!
     private var updateNode: InformationNode!
     
+    private var recentMatch: GKTurnBasedMatch?
+    
     // MARK: - Init
     
     override init() {
@@ -119,7 +121,13 @@ final class MenuScene: SKScene {
         onlineButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
         addChild(onlineButton)
         
-        updateNode = InformationNode("Received a new turn!", size: CGSize(width: buttonSize.width, height: 40))
+        updateNode = InformationNode("Received a new turn!", size: CGSize(width: buttonSize.width, height: 40)) {
+            guard let match = self.recentMatch else {
+                return
+            }
+            
+            self.loadAndDisplay(match: match)
+        }
         updateNode.alpha = 0
         runningYOffset -= sceneMargin + 40
         updateNode.position = CGPoint(x: sceneMargin, y: runningYOffset)
@@ -137,6 +145,28 @@ final class MenuScene: SKScene {
             return
         }
         
+        loadAndDisplay(match: match)
+    }
+    
+    @objc private func receivedNewTurn(_ notification: Notification) {
+        guard let match = notification.object as? GKTurnBasedMatch else {
+            return
+        }
+        
+        recentMatch = match
+
+        let flashActions = [
+            SKAction.fadeIn(withDuration: 0.15),
+            SKAction.wait(forDuration: 2),
+            SKAction.fadeOut(withDuration: 0.15)
+        ]
+        
+        updateNode.run(SKAction.sequence(flashActions))
+    }
+    
+    // MARK: - Helpers
+    
+    private func loadAndDisplay(match: GKTurnBasedMatch) {
         match.loadMatchData { data, error in
             let model: GameModel
             
@@ -152,17 +182,10 @@ final class MenuScene: SKScene {
                 model = GameModel()
             }
             
+            GameCenterHelper.helper.currentMatch = match
+            
             self.view?.presentScene(GameScene(model: model), transition: self.transition)
         }
-    }
-    
-    @objc private func receivedNewTurn(_ notification: Notification) {
-        let flashActions = [
-            SKAction.fadeIn(withDuration: 0.15),
-            SKAction.wait(forDuration: 2),
-            SKAction.fadeOut(withDuration: 0.15)
-        ]
-        updateNode.run(SKAction.sequence(flashActions))
     }
 
 }
