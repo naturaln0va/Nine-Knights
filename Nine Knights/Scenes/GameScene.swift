@@ -118,7 +118,7 @@ final class GameScene: SKScene {
         messageNode.zPosition = NodeLayer.ui.rawValue
         messageNode.position = CGPoint(
             x: sceneMargin,
-            y: runningYOffset
+            y: runningYOffset - (sceneMargin * 1.25)
         )
         
         addChild(messageNode)
