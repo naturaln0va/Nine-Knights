@@ -34,11 +34,8 @@ struct GameModel: Codable {
             stateAction = "place"
             
         case .movement:
-            if tokenCount(for: .knight) < minPlayerTokenCount {
-                return "Troll's win!"
-            }
-            else if tokenCount(for: .troll) < minPlayerTokenCount {
-                return "Knight's win!"
+            if let winner = winner {
+                return "\(winner == .knight ? "Knight" : "Troll")'s win!"
             }
             else {
                 stateAction = "move"
@@ -319,11 +316,8 @@ struct GameModel: Codable {
         currentMill = nil
 
         if state == .movement {
-            if tokenCount(for: .knight) == 2 {
-                winner = Player.troll
-            }
-            else if tokenCount(for: .troll) == 2 {
-                winner = Player.knight
+            if tokenCount(for: currentOpponent) == 2 || !canMove(currentOpponent) {
+                winner = currentPlayer
             }
             else {
                 isKnightTurn = !isKnightTurn
@@ -338,6 +332,21 @@ struct GameModel: Codable {
         return tokens.filter { token in
             return token.player == player
         }.count
+    }
+    
+    func canMove(_ player: Player) -> Bool {
+        let playerTokens = tokens.filter { token in
+            return token.player == player
+        }
+        
+        for token in playerTokens {
+            let emptyNeighbors = neighbors(at: token.coord).filter({ emptyCoordinates.contains($0) })
+            if !emptyNeighbors.isEmpty {
+                return true
+            }
+        }
+        
+        return false
     }
     
 }
