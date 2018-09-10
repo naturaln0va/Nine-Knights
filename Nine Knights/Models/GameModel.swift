@@ -175,7 +175,7 @@ struct GameModel: Codable {
       return token.player == player
     }
     
-    if playerTokens.count == 3 {
+    if playerTokens.count == 3, state == .movement {
       return playerTokens
     }
     
