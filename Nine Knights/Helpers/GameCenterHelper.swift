@@ -141,17 +141,7 @@ extension GameCenterHelper: GKTurnBasedMatchmakerViewControllerDelegate {
 
 extension GameCenterHelper: GKLocalPlayerListener {
   
-  func player(_ player: GKPlayer, didAccept invite: GKInvite) {
-    print("\(player.displayName): accepted invite from: \(invite.sender.displayName).")
-  }
-  
-  func player(_ player: GKPlayer, matchEnded match: GKTurnBasedMatch) {
-    print("\(player.displayName): match ended: \(match.matchID).")
-  }
-  
   func player(_ player: GKPlayer, wantsToQuitMatch match: GKTurnBasedMatch) {
-    print("\(player.displayName): wants to quit match: \(match.matchID).")
-    
     let activeOthers = match.others.filter { participant in
       return participant.status == .active
     }
@@ -170,8 +160,6 @@ extension GameCenterHelper: GKLocalPlayerListener {
   }
   
   func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
-    print("\(player.displayName): received a turn event for match: \(match.matchID). Did become active: \(didBecomeActive)")
-    
     guard didBecomeActive else {
       NotificationCenter.default.post(name: .receivedNewTurn, object: match)
       return
