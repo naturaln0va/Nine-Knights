@@ -133,6 +133,12 @@ final class GameScene: SKScene {
     }
     
     let groundNode = SKSpriteNode(imageNamed: "ground")
+    let aspectRatio = groundNode.size.width / groundNode.size.height
+    let adjustedGroundWidth = view?.bounds.width ?? 0
+    groundNode.size = CGSize(
+        width: adjustedGroundWidth,
+        height: adjustedGroundWidth / aspectRatio
+    )
     groundNode.zPosition = NodeLayer.background.rawValue
     runningYOffset += sceneMargin + (boardSideLength / 2) + (groundNode.size.height / 2)
     groundNode.position = CGPoint(

@@ -119,9 +119,15 @@ final class MenuScene: SKScene {
     addChild(logoNode)
     
     let groundNode = SKSpriteNode(imageNamed: "ground")
+    let aspectRatio = groundNode.size.width / groundNode.size.height
+    let adjustedGroundWidth = view?.bounds.width ?? 0
+    groundNode.size = CGSize(
+        width: adjustedGroundWidth,
+        height: adjustedGroundWidth / aspectRatio
+    )
     groundNode.position = CGPoint(
       x: viewWidth / 2,
-      y: (groundNode.size.height / 2) - sceneMargin
+      y: (groundNode.size.height / 2) - (sceneMargin * 1.375)
     )
     addChild(groundNode)
     
