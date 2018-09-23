@@ -120,18 +120,6 @@ final class GameScene: SKScene {
     
     addChild(boardNode)
     
-    if !GameCenterHelper.helper.canTakeTurnForCurrentMatch {
-      let coverSize = CGSize(
-        width: boardSideLength + 50,
-        height: boardSideLength + 50
-      )
-      let coverNode = SKSpriteNode(color: .background, size: coverSize)
-      coverNode.zPosition = NodeLayer.ui.rawValue + 1
-      coverNode.position = boardNode.position
-      coverNode.alpha = 0.6
-      addChild(coverNode)
-    }
-    
     let groundNode = SKSpriteNode(imageNamed: "ground")
     let aspectRatio = groundNode.size.width / groundNode.size.height
     let adjustedGroundWidth = view?.bounds.width ?? 0
@@ -189,10 +177,6 @@ final class GameScene: SKScene {
   }
   
   private func handleTouch(_ touch: UITouch) {
-    guard !isSendingTurn && GameCenterHelper.helper.canTakeTurnForCurrentMatch else {
-      return
-    }
-    
     guard model.winner == nil else {
       return
     }
@@ -379,26 +363,6 @@ final class GameScene: SKScene {
     } else {
       feedbackGenerator.impactOccurred()
       feedbackGenerator.prepare()
-      
-      if model.winner != nil {
-        GameCenterHelper.helper.win { error in
-          if let e = error {
-            print("Error winning match: \(e.localizedDescription)")
-            return
-          }
-          
-          self.returnToMenu()
-        }
-      } else {
-        GameCenterHelper.helper.endTurn(model) { error in
-          if let e = error {
-            print("Error ending turn: \(e.localizedDescription)")
-            return
-          }
-          
-          self.returnToMenu()
-        }
-      }
     }
   }
   

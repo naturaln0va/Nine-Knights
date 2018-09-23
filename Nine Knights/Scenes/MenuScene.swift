@@ -43,10 +43,6 @@ final class MenuScene: SKScene {
   }
   
   private var localButton: ButtonNode!
-  private var onlineButton: ButtonNode!
-  private var updateNode: InformationNode!
-  
-  private var recentMatch: GKTurnBasedMatch?
   
   // MARK: - Init
   
@@ -54,27 +50,6 @@ final class MenuScene: SKScene {
     super.init(size: .zero)
     
     scaleMode = .resizeFill
-    
-    NotificationCenter.default.addObserver(
-      self,
-      selector: #selector(authenticationChanged(_:)),
-      name: .authenticationChanged,
-      object: nil
-    )
-    
-    NotificationCenter.default.addObserver(
-      self,
-      selector: #selector(presentGame(_:)),
-      name: .presentGame,
-      object: nil
-    )
-    
-    NotificationCenter.default.addObserver(
-      self,
-      selector: #selector(receivedNewTurn(_:)),
-      name: .receivedNewTurn,
-      object: nil
-    )
   }
   
   required init?(coder aDecoder: NSCoder) {
@@ -84,7 +59,6 @@ final class MenuScene: SKScene {
   override func didMove(to view: SKView) {
     super.didMove(to: view)
     
-    GameCenterHelper.helper.currentMatch = nil
     feedbackGenerator.prepare()
     
     setUpScene(in: view)
@@ -145,78 +119,6 @@ final class MenuScene: SKScene {
     runningYOffset -= sceneMargin + logoNode.size.height
     localButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
     addChild(localButton)
-    
-    onlineButton = ButtonNode("Online Game", size: buttonSize) {
-      GameCenterHelper.helper.presentMatchmaker()
-    }
-    onlineButton.isEnabled = GameCenterHelper.helper.isAuthenticated
-    runningYOffset -= sceneMargin + buttonSize.height
-    onlineButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
-    addChild(onlineButton)
-    
-    updateNode = InformationNode("Received a new turn!", size: CGSize(width: buttonSize.width, height: 40)) {
-      guard let match = self.recentMatch else {
-        return
-      }
-      
-      self.loadAndDisplay(match: match)
-    }
-    updateNode.alpha = 0
-    runningYOffset -= sceneMargin + 40
-    updateNode.position = CGPoint(x: sceneMargin, y: runningYOffset)
-    addChild(updateNode)
-  }
-  
-  // MARK: - Notifications
-  
-  @objc private func authenticationChanged(_ notification: Notification) {
-    onlineButton.isEnabled = notification.object as? Bool ?? false
-  }
-  
-  @objc private func presentGame(_ notification: Notification) {
-    guard let match = notification.object as? GKTurnBasedMatch else {
-      return
-    }
-    
-    loadAndDisplay(match: match)
-  }
-  
-  @objc private func receivedNewTurn(_ notification: Notification) {
-    guard let match = notification.object as? GKTurnBasedMatch else {
-      return
-    }
-    
-    recentMatch = match
-    
-    let flashActions = [
-      SKAction.fadeIn(withDuration: 0.15),
-      SKAction.wait(forDuration: 2),
-      SKAction.fadeOut(withDuration: 0.15)
-    ]
-    
-    updateNode.run(SKAction.sequence(flashActions))
-  }
-  
-  // MARK: - Helpers
-  
-  private func loadAndDisplay(match: GKTurnBasedMatch) {
-    match.loadMatchData { data, error in
-      let model: GameModel
-      
-      if let data = data {
-        do {
-          model = try JSONDecoder().decode(GameModel.self, from: data)
-        } catch {
-          model = GameModel()
-        }
-      } else {
-        model = GameModel()
-      }
-      
-      GameCenterHelper.helper.currentMatch = match
-      
-      self.view?.presentScene(GameScene(model: model), transition: self.transition)
-    }
   }
   
 }

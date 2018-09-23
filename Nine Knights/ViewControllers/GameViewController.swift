@@ -51,8 +51,6 @@ final class GameViewController: UIViewController {
     super.viewDidLoad()
     
     skView.presentScene(MenuScene())
-    
-    GameCenterHelper.helper.viewController = self
   }
   
 }
