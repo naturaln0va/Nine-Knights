@@ -43,6 +43,7 @@ final class MenuScene: SKScene {
   }
   
   private var localButton: ButtonNode!
+  private var onlineButton: ButtonNode!
   
   // MARK: - Init
   
@@ -60,6 +61,21 @@ final class MenuScene: SKScene {
     super.didMove(to: view)
     
     feedbackGenerator.prepare()
+    GameCenterHelper.helper.currentMatch = nil
+    
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(authenticationChanged(_:)),
+      name: .authenticationChanged,
+      object: nil
+    )
+    
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(presentGame(_:)),
+      name: .presentGame,
+      object: nil
+    )
     
     setUpScene(in: view)
   }
@@ -119,6 +135,53 @@ final class MenuScene: SKScene {
     runningYOffset -= sceneMargin + logoNode.size.height
     localButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
     addChild(localButton)
+    
+    onlineButton = ButtonNode("Online Game", size: buttonSize) {
+      GameCenterHelper.helper.presentMatchmaker()
+    }
+    onlineButton.isEnabled = GameCenterHelper.isAuthenticated
+    runningYOffset -= sceneMargin + buttonSize.height
+    onlineButton.position = CGPoint(x: sceneMargin, y: runningYOffset)
+    addChild(onlineButton)
+  }
+  
+  // MARK: - Notifications
+
+  @objc private func authenticationChanged(_ notification: Notification) {
+    onlineButton.isEnabled = notification.object as? Bool ?? false
+  }
+  
+  @objc private func presentGame(_ notification: Notification) {
+    // 1
+    guard let match = notification.object as? GKTurnBasedMatch else {
+      return
+    }
+    
+    loadAndDisplay(match: match)
+  }
+
+  // MARK: - Helpers
+
+  private func loadAndDisplay(match: GKTurnBasedMatch) {
+    // 2
+    match.loadMatchData { data, error in
+      let model: GameModel
+      
+      if let data = data {
+        do {
+          // 3
+          model = try JSONDecoder().decode(GameModel.self, from: data)
+        } catch {
+          model = GameModel()
+        }
+      } else {
+        model = GameModel()
+      }
+      
+      GameCenterHelper.helper.currentMatch = match
+      // 4
+      self.view?.presentScene(GameScene(model: model), transition: self.transition)
+    }
   }
   
 }
